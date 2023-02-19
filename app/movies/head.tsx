@@ -1,9 +1,9 @@
-export default function Head() {
+export default function MoviesHead() {
   return (
     <>
-      <title>CineScope</title>
+      <title>CineScope | Movies</title>
       <meta content="width=device-width, initial-scale=1" name="viewport" />
-      <meta name="description" content="A movie App" />
+      <meta name="description" content="Movies page" />
       <link rel="icon" href="/favicon.ico" />
     </>
   );
