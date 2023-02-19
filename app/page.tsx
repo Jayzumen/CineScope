@@ -34,7 +34,7 @@ async function getMovies() {
 
 export default async function Home() {
   const movies = await getMovies();
-  const randomMovie = movies[Math.floor(Math.random() * movies.length)];
+  const randomMovie = movies[Math.floor(Math.random() * movies?.length)];
   // console.log(randomMovie);
 
   return (

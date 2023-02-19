@@ -8,6 +8,16 @@ async function getMovie(id: string) {
   return movie;
 }
 
+export async function generateStaticParams() {
+  const res = await fetch(
+    `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`
+  );
+  const data = await res.json();
+  return data.results.map((movie: Movie) => ({
+    id: movie.id.toString(),
+  }));
+}
+
 export default async function MoviesPage({
   params,
 }: {
