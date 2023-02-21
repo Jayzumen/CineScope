@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { baseUrl, truncateString } from "../constants";
-import { Movie } from "../page";
+import { Movie } from "../movies/types";
 
 const getRandomMovies = (movies: Movie[], randomMovie: Movie) => {
   let randomMovies: Movie[] = [];

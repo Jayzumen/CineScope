@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Movie } from "../page";
+import { Movie } from "./types";
 
 async function getMovies() {
   const res = await fetch(

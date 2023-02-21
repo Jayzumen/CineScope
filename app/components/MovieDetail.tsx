@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { truncateString } from "../constants";
-import { Movie } from "../page";
+import { Movie } from "../movies/types";
 
 function MovieDetail({ randomMovie }: { randomMovie: Movie }) {
   return (

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React from "react";
 import { baseUrl } from "../constants";
-import { Movie } from "../page";
+import { Movie } from "../movies/types";
 
 function BackgroundImage({ randomMovie }: { randomMovie: Movie }) {
   return (
