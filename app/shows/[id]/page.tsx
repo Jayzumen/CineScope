@@ -1,7 +1,7 @@
-import { baseUrl, truncateString } from "../../constants";
+import { baseUrl } from "../../constants";
 import Image from "next/image";
 import Link from "next/link";
-import { ShowDetails } from "../types";
+import { Show, ShowDetails } from "../types";
 
 async function getShow(id: string) {
   const res = await fetch(
@@ -16,14 +16,14 @@ export async function generateStaticParams() {
     `https://api.themoviedb.org/3/trending/tv/week?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
   const data = await res.json();
-  return data.results.map((show: ShowDetails) => ({
+  return data.results.map((show: Show) => ({
     id: show.id.toString(),
   }));
 }
 
 export default async function ShowPage({ params }: { params: { id: string } }) {
   const show = await getShow(params.id);
-  // console.log(show);
+  // console.log(show.seasons);
   return (
     <main className="flex flex-col justify-center ">
       {/* background Image */}

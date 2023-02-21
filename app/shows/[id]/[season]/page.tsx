@@ -10,6 +10,17 @@ async function getShow(id: string) {
   return show;
 }
 
+export async function generateStaticParams() {
+  const res = await fetch(
+    `https://api.themoviedb.org/3/tv/1399?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+  );
+  const data = await res.json();
+  return data.seasons.map((season: Season) => ({
+    id: data.id.toString(),
+    season: season.id.toString(),
+  }));
+}
+
 export default async function SeasonsPage({
   params,
 }: {
@@ -17,10 +28,13 @@ export default async function SeasonsPage({
 }) {
   const show = await getShow(params.id);
 
-  const season: Season | undefined = show?.seasons?.find(
-    (season) => season.id === parseInt(params.season)
-  );
-  console.log(season);
+  let season: Season | undefined = undefined;
+  if (params.season) {
+    season = show?.seasons?.find(
+      (season) => season.id === parseInt(params.season)
+    );
+    // console.log(season);
+  }
 
   return (
     <main className="flex flex-col justify-center ">
