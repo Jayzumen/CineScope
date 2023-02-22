@@ -1,4 +1,4 @@
-import { getMovie } from "./page";
+import { getMovie } from "@/app/getData";
 
 export default async function MovieHead({
   params,

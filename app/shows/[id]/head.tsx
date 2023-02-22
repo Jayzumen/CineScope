@@ -1,4 +1,4 @@
-import { getShow } from "./page";
+import { getShow } from "@/app/getData";
 
 export default async function ShowHead({ params }: { params: { id: string } }) {
   const show = await getShow(params.id);

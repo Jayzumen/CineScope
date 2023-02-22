@@ -2,16 +2,7 @@ import BackgroundImage from "./components/BackgroundImage";
 import Footer from "./components/Footer";
 import MovieDetail from "./components/MovieDetail";
 import MovieList from "./components/MovieList";
-import { Movie } from "./movies/types";
-
-async function getMovies() {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`
-  );
-  const movies = await res.json();
-  const results = movies.results as Movie[];
-  return results;
-}
+import { getMovies } from "./getData";
 
 export default async function Home() {
   const movies = await getMovies();

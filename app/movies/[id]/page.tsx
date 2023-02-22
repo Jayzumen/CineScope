@@ -1,31 +1,8 @@
 import { baseUrl } from "@/app/constants";
+import { getCredits, getMovie, getSimilar } from "@/app/getData";
 import Image from "next/image";
 import Link from "next/link";
-import { Credits, Movie, MovieDetail, SimilarMovies } from "../types";
-
-export async function getMovie(id: string) {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-  );
-  const movie: MovieDetail = await res.json();
-  return movie;
-}
-
-async function getSimilar(id: string) {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${id}/similar?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-  );
-  const data: SimilarMovies = await res.json();
-  return data.results;
-}
-
-async function getCredits(id: string) {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-  );
-  const credits: Credits = await res.json();
-  return credits;
-}
+import { Movie } from "../types";
 
 export async function generateStaticParams() {
   const res = await fetch(

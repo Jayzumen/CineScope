@@ -1,4 +1,4 @@
-import { getActor } from "./page";
+import { getActor } from "@/app/getData";
 
 export default async function ActorHead({
   params,

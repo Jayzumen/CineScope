@@ -1,14 +1,7 @@
 import { baseUrl } from "@/app/constants";
+import { getActor } from "@/app/getData";
 import Image from "next/image";
 import { Actor } from "../types";
-
-export async function getActor(id: string) {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/person/${id}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-  );
-  const actor: Actor = await res.json();
-  return actor;
-}
 
 export async function generateStaticParams() {
   const res = await fetch(

@@ -1,15 +1,8 @@
 import { baseUrl } from "../../constants";
 import Image from "next/image";
 import Link from "next/link";
-import { Show, ShowDetails } from "../types";
-
-export async function getShow(id: string) {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/tv/${id}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US`
-  );
-  const show: ShowDetails = await res.json();
-  return show;
-}
+import { Show } from "../types";
+import { getShow } from "@/app/getData";
 
 export async function generateStaticParams() {
   const res = await fetch(

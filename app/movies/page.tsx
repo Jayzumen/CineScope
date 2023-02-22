@@ -1,15 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Movie } from "./types";
-
-async function getMovies() {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/trending/movie/week?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-  );
-  const movies = await res.json();
-  const results = movies.results as Movie[];
-  return results;
-}
+import { getMovies } from "../getData";
 
 export default async function MoviesPage() {
   const movies = await getMovies();
