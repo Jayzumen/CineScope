@@ -40,7 +40,7 @@ function Navbar() {
         isScrolled ? "bg-slate-900" : "bg-transparent"
       } sticky top-0 flex items-center justify-between py-4 px-4 text-xl md:px-10 `}
     >
-      <p className="text-2xl font-semibold text-sky-700">CineScope</p>
+      <p className="text-2xl font-semibold text-sky-500">CineScope</p>
 
       <ul className="hidden gap-4 md:flex">
         {Links.map((link) => {

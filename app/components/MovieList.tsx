@@ -27,7 +27,7 @@ function MovieList({
   const randomMovies = getRandomMovies(movies, randomMovie);
 
   return (
-    <div className="mt-4 hidden h-fit flex-col gap-4 rounded-lg bg-slate-900 lg:flex">
+    <div className="mt-4 hidden h-fit flex-col gap-4 rounded-lg bg-slate-900 pb-4 lg:flex">
       <p className="mx-auto text-2xl font-semibold">Top Movies</p>
       {randomMovies.map((movie) => (
         <Link

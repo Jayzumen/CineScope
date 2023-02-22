@@ -26,7 +26,7 @@ export default async function Home() {
         <div className="flex flex-col px-4 py-4 md:px-20">
           {/* Page Title */}
           <p className="max-w-[500px] pb-4 text-5xl font-semibold md:text-7xl">
-            Welcome to <span className="text-sky-900">CineScope</span>
+            Welcome to <span className="text-sky-500">CineScope</span>
           </p>
 
           <div className="flex justify-between">
