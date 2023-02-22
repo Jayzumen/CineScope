@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Show, ShowDetails } from "../types";
 
-async function getShow(id: string) {
+export async function getShow(id: string) {
   const res = await fetch(
     `https://api.themoviedb.org/3/tv/${id}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US`
   );

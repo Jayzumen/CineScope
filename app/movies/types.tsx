@@ -56,10 +56,10 @@ export interface MovieDetail {
 
 export interface Credits {
   id: number;
-  cast: Cast[];
+  cast: Actor[];
 }
 
-export interface Cast {
+export interface Actor {
   adult: boolean;
   gender: number;
   id: number;
