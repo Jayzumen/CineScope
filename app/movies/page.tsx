@@ -15,29 +15,26 @@ export default async function MoviesPage() {
   const movies = await getMovies();
   return (
     <main className="flex flex-col justify-center gap-4 py-8 text-center">
-      <h1 className="text-5xl font-semibold underline">Top trending Movies</h1>
+      <h1 className="my-4 text-5xl font-semibold underline">
+        Top trending Movies
+      </h1>
       <div className="flex flex-wrap justify-center gap-8">
         {movies.map((movie) => (
           <Link
             aria-label={`Link to ${movie.title || movie.original_title} page`}
             href={`/movies/${movie.id}`}
             key={movie.id}
-            className="shadow-md shadow-slate-500 transition hover:opacity-70"
+            className="rounded-md border border-slate-500 shadow-md shadow-slate-500 transition hover:opacity-70"
           >
-            <div className="flex flex-col gap-2">
-              <p className="mx-auto min-h-[50px] max-w-[250px] text-xl font-semibold">
-                {movie.title || movie.original_title}
-              </p>
-
-              <Image
-                src={`https://image.tmdb.org/t/p/w500${
-                  movie.poster_path || movie.backdrop_path
-                }`}
-                alt={movie.title}
-                width={250}
-                height={250}
-              />
-            </div>
+            <Image
+              src={`https://image.tmdb.org/t/p/w500${
+                movie.poster_path || movie.backdrop_path
+              }`}
+              alt={movie.title}
+              width={300}
+              height={250}
+              title={movie.title}
+            />
           </Link>
         ))}
       </div>
