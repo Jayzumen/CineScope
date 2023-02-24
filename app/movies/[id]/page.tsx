@@ -23,6 +23,17 @@ export async function generateMetadata({
   };
 }
 
+export async function generateStaticParams() {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`
+  );
+  const data = await response.json();
+  const paths = data.results.map((movie: Movie) => ({
+    id: movie.id.toString(),
+  }));
+  return paths;
+}
+
 export default async function MoviePage({
   params,
 }: {
