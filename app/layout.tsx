@@ -1,5 +1,12 @@
-import Navbar from "./components/Navbar";
 import "./globals.css";
+
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "CineScope",
+  description: "A movie search engine",
+  icons: "/favicon.ico",
+};
 
 export default function RootLayout({
   children,
@@ -9,11 +16,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head />
-      <body className="min-h-screen bg-black text-white scrollbar-hide">
-        <main className="min-h-screen">
-          <Navbar />
-          {children}
-        </main>
+      <body className="flex min-h-screen flex-col bg-black text-white">
+        <main className="min-h-screen">{children}</main>
       </body>
     </html>
   );

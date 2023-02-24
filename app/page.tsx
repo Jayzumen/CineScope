@@ -1,32 +1,52 @@
-import BackgroundImage from "./components/BackgroundImage";
+import Image from "next/image";
+import Link from "next/link";
 import Footer from "./components/Footer";
-import MovieDetail from "./components/MovieDetail";
-import MovieList from "./components/MovieList";
-import { getMovies } from "./getData";
+import { baseUrl } from "./constants";
+import { Movies } from "./movies/movieTypes";
+
+async function getMovies() {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/trending/movie/day?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`
+  );
+  const data = await response.json();
+  return data.results as Movies[];
+}
 
 export default async function Home() {
-  const movies = await getMovies();
-  const randomMovie = movies[Math.floor(Math.random() * movies?.length)];
-
+  const movies: Movies[] = await getMovies();
   return (
     <>
-      <main className="pb-10">
-        {/* Background Image */}
-        <BackgroundImage randomMovie={randomMovie} />
-        {/* Display of Movies */}
-        <div className="flex flex-col px-4 py-4 md:px-20">
-          {/* Page Title */}
-          <p className="max-w-[500px] pb-4 text-5xl font-semibold md:text-7xl">
-            Welcome to <span className="text-sky-500">CineScope</span>
-          </p>
-
-          <div className="flex justify-between">
-            {/* Movie List */}
-            <MovieList movies={movies} randomMovie={randomMovie} />
-
-            {/* Movie Detail */}
-            <MovieDetail randomMovie={randomMovie} />
-          </div>
+      <main className="flex min-h-[96vh] flex-col text-center">
+        <h1 className="pt-6 text-4xl font-bold md:text-7xl">
+          Welcome to <span className="text-sky-700">CineScope</span>
+        </h1>
+        <div className="flex flex-wrap justify-center gap-4 py-10 text-xl font-semibold">
+          <Link
+            aria-label="Link to Movies page"
+            className="rounded-md bg-sky-600 p-2 transition hover:bg-sky-700"
+            href="/movies"
+          >
+            Movies
+          </Link>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-4 p-10">
+          {movies.map((movie) => (
+            <Link
+              className="transition hover:opacity-80"
+              aria-label={movie.title || movie.original_title}
+              key={movie.id}
+              href={`/movies/${movie.id}`}
+            >
+              <Image
+                className="rounded-lg "
+                width={300}
+                height={400}
+                src={baseUrl + movie.poster_path || movie.backdrop_path}
+                alt={movie.title || movie.original_title}
+                title={movie.title || movie.original_title}
+              />
+            </Link>
+          ))}
         </div>
       </main>
       <Footer />
