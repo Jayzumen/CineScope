@@ -1,11 +1,11 @@
 import "./globals.css";
 
 import { Metadata } from "next";
+import Navbar from "./components/Navbar";
 
 export const metadata: Metadata = {
   title: "CineScope",
   description: "A movie search engine",
-  icons: "/favicon.ico",
 };
 
 export default function RootLayout({
@@ -17,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <head />
       <body className="flex min-h-screen flex-col bg-black text-white">
+        <Navbar />
         <main className="min-h-screen">{children}</main>
       </body>
     </html>

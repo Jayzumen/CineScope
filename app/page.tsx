@@ -20,15 +20,7 @@ export default async function Home() {
         <h1 className="pt-6 text-4xl font-bold md:text-7xl">
           Welcome to <span className="text-sky-700">CineScope</span>
         </h1>
-        <div className="flex flex-wrap justify-center gap-4 py-10 text-xl font-semibold">
-          <Link
-            aria-label="Link to Movies page"
-            className="rounded-md bg-sky-600 p-2 transition hover:bg-sky-700"
-            href="/movies"
-          >
-            Movies
-          </Link>
-        </div>
+        <div className="flex flex-wrap justify-center gap-4 py-10 text-xl font-semibold"></div>
         <div className="flex flex-wrap items-center justify-center gap-4 p-10">
           {movies.map((movie) => (
             <Link
@@ -38,7 +30,7 @@ export default async function Home() {
               href={`/movies/${movie.id}`}
             >
               <Image
-                className="rounded-lg "
+                className="rounded-lg object-cover"
                 width={300}
                 height={400}
                 src={baseUrl + movie.poster_path || movie.backdrop_path}
