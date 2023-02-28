@@ -1,4 +1,3 @@
-import supabase from "@/utils/supabase";
 import { Metadata } from "next";
 import AccountDetails from "./AccountDetails";
 
