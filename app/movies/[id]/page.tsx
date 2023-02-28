@@ -2,6 +2,7 @@ import { baseUrl } from "@/app/constants";
 import { Metadata } from "next";
 import Image from "next/image";
 import { Movie } from "../movieTypes";
+import LikeButton from "./LikeButton";
 
 async function getMovie(id: string): Promise<Movie> {
   const response = await fetch(
@@ -54,6 +55,7 @@ export default async function MoviePage({
         <h1 className="my-10 text-center text-4xl font-bold">{movie.title}</h1>
         <p className="text-xl font-semibold">Plot:</p>
         <p className="max-w-[500px] text-lg">{movie.overview}</p>
+        <LikeButton movie={movie} />
       </div>
     </div>
   );

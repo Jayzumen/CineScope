@@ -1,33 +1,35 @@
 "use client";
 
-import supabase from "@/utils/supabase";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { signInWithPopup } from "firebase/auth";
+import { githubProvider, googleProvider } from "@/utils/providers";
+import { auth } from "@/utils/firebase";
 
 function LoginForm() {
   const router = useRouter();
 
   const logInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-    });
-    if (error) {
-      console.log("error", error);
-    } else {
-      router.push("/");
-    }
+    signInWithPopup(auth, googleProvider)
+      .then((res) => {
+        // console.log("res", res);
+        router.push("/account");
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
   };
 
   const logInWithGithub = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-    });
-    if (error) {
-      console.log("error", error);
-    } else {
-      router.push("/");
-    }
+    signInWithPopup(auth, githubProvider)
+      .then((res) => {
+        // console.log("res", res);
+        router.push("/account");
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
   };
   return (
     <div className="mt-10 flex flex-col items-center justify-center gap-4 p-10">

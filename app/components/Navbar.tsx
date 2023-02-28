@@ -1,39 +1,35 @@
 "use client";
 
-import supabase from "@/utils/supabase";
+import { auth } from "@/utils/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<string | undefined>("");
-
-  const getUser = async () => {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-    if (error) {
-      console.log(error);
-    }
-    if (!session?.user) {
-      setIsAuthenticated(false);
-    } else if (session?.user?.app_metadata.provider === "google") {
-      setIsAuthenticated(true);
-      setUser(session.user.identities![0].identity_data.name);
-    } else {
-      setIsAuthenticated(true);
-      setUser(session.user.identities![0].identity_data.user_name);
-    }
-  };
+  const [user, setUser] = useState<string | null>("");
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    setIsAuthenticated(false);
-    setUser("");
-    if (error) {
-      console.log(error);
-    }
+    signOut(auth)
+      .then(() => {
+        setIsAuthenticated(false);
+        setUser("");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getUser = async () => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        setUser(user?.displayName);
+      } else {
+        setIsAuthenticated(false);
+        setUser("");
+      }
+    });
   };
 
   useEffect(() => {
@@ -41,7 +37,7 @@ const Navbar = () => {
   }, [isAuthenticated]);
 
   return (
-    <nav className="text-xl">
+    <nav className="sticky top-0 z-10 bg-black text-xl">
       <div className="flex items-center justify-between py-4 px-10">
         <div className="flex items-center">
           <Link
@@ -63,10 +59,7 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <Link
-                className="transition hover:underline"
-                href={`/user/${user}`}
-              >
+              <Link className="transition hover:underline" href="/account">
                 {user?.split(" ")[0]}
               </Link>
               <button
