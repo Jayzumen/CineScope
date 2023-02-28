@@ -4,22 +4,12 @@ import { Movie } from "../movieTypes";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/utils/firebase";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  setDoc,
-} from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 const LikeButton = ({ movie }: { movie: Movie }) => {
   const [liked, setLiked] = useState(false);
   const [userId, setUserId] = useState<string>("");
-
-  // const colRef = collection(db, "users", userId, "likedMovies");
-  // const docRef = doc(colRef, movie.id.toString());
 
   const handleLike = async () => {
     const colRef = collection(db, "users", userId, "likedMovies");

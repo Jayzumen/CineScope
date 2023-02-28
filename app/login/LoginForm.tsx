@@ -13,7 +13,6 @@ function LoginForm() {
   const logInWithGoogle = async () => {
     signInWithPopup(auth, googleProvider)
       .then((res) => {
-        // console.log("res", res);
         router.push("/account");
       })
       .catch((error) => {
@@ -24,7 +23,6 @@ function LoginForm() {
   const logInWithGithub = async () => {
     signInWithPopup(auth, githubProvider)
       .then((res) => {
-        // console.log("res", res);
         router.push("/account");
       })
       .catch((error) => {

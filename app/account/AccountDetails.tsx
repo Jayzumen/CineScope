@@ -1,8 +1,7 @@
 "use client";
 
-import { auth, db } from "@/utils/firebase";
+import { auth } from "@/utils/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Movie } from "../movies/movieTypes";
 
