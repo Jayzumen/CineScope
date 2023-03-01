@@ -13,6 +13,7 @@ const ToastUtils = () => {
       rtl={false}
       pauseOnFocusLoss
       draggable
+      pauseOnHover={false}
       theme="dark"
     />
   );

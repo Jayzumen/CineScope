@@ -19,7 +19,7 @@ export default function RootLayout({
       <head />
       <body className="flex min-h-screen flex-col bg-black text-white">
         <Navbar />
-        <main className="min-h-screen">{children}</main>
+        <main>{children}</main>
         <ToastUtils />
       </body>
     </html>

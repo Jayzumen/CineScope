@@ -28,6 +28,9 @@ export interface Movie {
   tagline: string;
   title: string;
   video: boolean;
+  videos: {
+    results: Video[];
+  };
   vote_average: number;
   vote_count: number;
 }
@@ -48,4 +51,17 @@ export interface Movies {
   video: boolean;
   vote_average: number;
   vote_count: number;
+}
+
+export interface Video {
+  id: string;
+  iso_639_1: string;
+  iso_3166_1: string;
+  key: string;
+  name: string;
+  official: boolean;
+  published_at: string;
+  site: string;
+  size: number;
+  type: string;
 }
