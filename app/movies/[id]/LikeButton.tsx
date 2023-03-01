@@ -6,24 +6,27 @@ import { useEffect, useState } from "react";
 import { auth, db } from "@/utils/firebase";
 import { collection, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { toast } from "react-toastify";
 
 const LikeButton = ({ movie }: { movie: Movie }) => {
   const [liked, setLiked] = useState(false);
   const [userId, setUserId] = useState<string>("");
 
   const handleLike = async () => {
+    if (!userId) return toast.error("You need to be logged in to like a movie");
     const colRef = collection(db, "users", userId, "likedMovies");
     const docRef = doc(colRef, movie.id.toString());
     await setDoc(docRef, movie);
     setLiked(true);
+    toast(`"${movie.title}" added to your liked movies`);
   };
 
   const handleDelete = async () => {
     const colRef = collection(db, "users", userId, "likedMovies");
     const docRef = doc(colRef, movie.id.toString());
     await deleteDoc(docRef);
-
     setLiked(false);
+    toast(`"${movie.title}" removed from your liked movies`);
   };
 
   useEffect(() => {

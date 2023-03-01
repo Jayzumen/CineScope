@@ -6,6 +6,7 @@ import { FaGithub } from "react-icons/fa";
 import { signInWithPopup } from "firebase/auth";
 import { githubProvider, googleProvider } from "@/utils/providers";
 import { auth } from "@/utils/firebase";
+import { toast } from "react-toastify";
 
 function LoginForm() {
   const router = useRouter();
@@ -13,6 +14,7 @@ function LoginForm() {
   const logInWithGoogle = async () => {
     signInWithPopup(auth, googleProvider)
       .then((res) => {
+        toast("Logged in successfully");
         router.push("/account");
       })
       .catch((error) => {
@@ -23,6 +25,7 @@ function LoginForm() {
   const logInWithGithub = async () => {
     signInWithPopup(auth, githubProvider)
       .then((res) => {
+        toast("Logged in successfully");
         router.push("/account");
       })
       .catch((error) => {

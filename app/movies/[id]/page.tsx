@@ -52,10 +52,32 @@ export default async function MoviePage({
         />
       </div>
       <div className="px-10">
-        <h1 className="my-10 text-center text-4xl font-bold">{movie.title}</h1>
-        <p className="text-xl font-semibold">Plot:</p>
-        <p className="max-w-[500px] text-lg">{movie.overview}</p>
-        <LikeButton movie={movie} />
+        <h1 className="my-4 mt-10 text-center text-4xl font-bold">
+          {movie.title}
+        </h1>
+        <div className="mb-8 flex items-center justify-center gap-4">
+          <p className="text-2xl font-semibold italic">{movie?.tagline}</p>
+          <LikeButton movie={movie} />
+        </div>
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex flex-col gap-4">
+            <p className="text-xl font-semibold">
+              Release Date:{" "}
+              <span className="text-lg font-normal italic">
+                {movie.release_date}
+              </span>
+            </p>
+            <p className="text-xl font-semibold">
+              Runtime:{" "}
+              <span className="text-lg font-normal italic">
+                {movie.runtime} minutes
+              </span>
+            </p>
+
+            <p className="text-xl font-semibold">Plot:</p>
+            <p className="max-w-[500px] text-lg">{movie.overview}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

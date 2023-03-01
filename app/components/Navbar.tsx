@@ -3,17 +3,22 @@
 import { auth } from "@/utils/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<string | null>("");
+  const router = useRouter();
 
   const handleLogout = async () => {
     signOut(auth)
       .then(() => {
         setIsAuthenticated(false);
         setUser("");
+        router.push("/");
+        toast("Logged out successfully");
       })
       .catch((error) => {
         console.log(error);
