@@ -1,6 +1,6 @@
 "use client";
 
-import { auth } from "@/utils/firebase";
+import { auth } from "../../utils/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,32 +16,38 @@ const Navbar = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
-    signOut(auth)
-      .then(() => {
-        setIsAuthenticated(false);
-        setUser("");
-        router.push("/");
-        toast("Logged out successfully");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    try {
+      await signOut(auth);
+      setIsAuthenticated(false);
+      setUser("");
+      router.push("/");
+      toast("Logged out successfully");
+    } catch (error) {
+      console.log(error);
+      toast("Error logging out");
+    }
   };
 
   const getUser = async () => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAuthenticated(true);
-        setUser(user?.displayName);
-      } else {
-        setIsAuthenticated(false);
-        setUser("");
-      }
-    });
+    try {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsAuthenticated(true);
+          setUser(user?.displayName);
+        } else {
+          setIsAuthenticated(false);
+          setUser("");
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    getUser();
+    if (isAuthenticated) {
+      getUser();
+    }
   }, [isAuthenticated]);
 
   return (
