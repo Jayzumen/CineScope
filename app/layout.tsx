@@ -21,6 +21,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "CineScope",
   description: "A movie search engine",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

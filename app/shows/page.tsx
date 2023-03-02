@@ -33,7 +33,7 @@ export default async function ShowsPage() {
             <Image
               className="rounded-lg object-cover"
               width={200}
-              height={400}
+              height={300}
               src={baseUrl + show.poster_path || show.backdrop_path}
               alt={show.name || show.original_name}
               title={show.name || show.original_name}

@@ -34,7 +34,7 @@ export default async function Home() {
               <Image
                 className="rounded-lg object-cover"
                 width={200}
-                height={400}
+                height={300}
                 src={baseUrl + movie.poster_path || movie.backdrop_path}
                 alt={movie.title || movie.original_title}
                 title={movie.title || movie.original_title}
