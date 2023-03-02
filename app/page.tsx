@@ -20,7 +20,9 @@ export default async function Home() {
         <h1 className="pt-6 text-4xl font-bold md:text-7xl">
           Welcome to <span className="text-sky-700">CineScope</span>
         </h1>
-        <div className="flex flex-wrap justify-center gap-4 py-10 text-xl font-semibold"></div>
+        <p className="mt-10 text-center text-2xl font-semibold">
+          Latest Trending Movies
+        </p>
         <div className="flex flex-wrap items-center justify-center gap-4 p-10">
           {movies.map((movie) => (
             <Link
@@ -31,8 +33,8 @@ export default async function Home() {
             >
               <Image
                 className="rounded-lg object-cover"
-                width={400}
-                height={600}
+                width={200}
+                height={400}
                 src={baseUrl + movie.poster_path || movie.backdrop_path}
                 alt={movie.title || movie.original_title}
                 title={movie.title || movie.original_title}

@@ -47,7 +47,7 @@ const Navbar = () => {
         <div className="flex items-center">
           <Link
             aria-label="Home Page Link"
-            className="font-semibold italic text-sky-600 transition hover:font-bold hover:text-sky-500"
+            className=" font-vibes text-2xl font-bold text-sky-600 transition hover:font-bold hover:text-sky-500"
             href="/"
           >
             CineScope

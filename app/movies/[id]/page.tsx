@@ -54,16 +54,14 @@ export default async function MoviePage({
         />
       </div>
       <div className="px-10">
-        <h1 className="my-4 pt-4 text-center text-4xl font-bold">
-          {movie.title}
-        </h1>
-        <div className="mb-8 flex items-center justify-center gap-4">
+        <h1 className="my-4 pt-4 text-5xl font-bold">{movie.title}</h1>
+        <div className="mb-8 flex items-center  gap-4">
           <p className="text-2xl font-semibold italic">{movie?.tagline}</p>
           <LikeButton movie={movie} />
         </div>
         <Trailer movie={movie} />
 
-        <div className="flex flex-col gap-4 md:flex-row">
+        <div className="mt-4 flex flex-col gap-4 md:flex-row">
           <div className="flex flex-col gap-4">
             <p className="text-xl font-semibold">
               Release Date:{" "}
