@@ -61,6 +61,13 @@ const Navbar = () => {
           >
             Movies
           </Link>
+          <Link
+            aria-label="Shows Page Link"
+            className="transition hover:underline"
+            href="/shows"
+          >
+            TV Shows
+          </Link>
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">

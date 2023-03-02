@@ -21,7 +21,8 @@ export default async function MoviesPage() {
   const movies: Movies[] = await getMovies();
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-10">
-      <div className="flex flex-wrap justify-center gap-4">
+      <h1 className="mb-8 text-center text-5xl font-semibold">Movies</h1>
+      <div className="mx-auto flex max-w-[1200px] flex-wrap justify-center gap-8">
         {movies.map((movie) => (
           <Link
             className="transition hover:opacity-80"
@@ -31,8 +32,8 @@ export default async function MoviesPage() {
           >
             <Image
               className="rounded-lg object-cover"
-              width={400}
-              height={600}
+              width={200}
+              height={300}
               src={baseUrl + movie.poster_path || movie.backdrop_path}
               alt={movie.title || movie.original_title}
               title={movie.title || movie.original_title}

@@ -23,7 +23,7 @@ export default async function Home() {
         <p className="mt-10 text-center text-2xl font-semibold">
           Latest Trending Movies
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-4 p-10">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-4 p-10">
           {movies.map((movie) => (
             <Link
               className="transition hover:opacity-80"
