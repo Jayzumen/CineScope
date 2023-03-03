@@ -3,10 +3,16 @@ import Link from "next/link";
 import Footer from "./components/Footer";
 import { baseUrl } from "./constants";
 import { Movies } from "./movies/movieTypes";
+import { truncateString } from "./constants";
 
 async function getMovies() {
   const response = await fetch(
-    `https://api.themoviedb.org/3/trending/movie/day?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`
+    `https://api.themoviedb.org/3/trending/movie/day?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`,
+    {
+      next: {
+        revalidate: 20,
+      },
+    }
   );
   const data = await response.json();
   return data.results as Movies[];
@@ -14,34 +20,46 @@ async function getMovies() {
 
 export default async function Home() {
   const movies: Movies[] = await getMovies();
+
+  const randomMovies = movies.sort(() => Math.random() - 0.5).slice(0, 5);
+
   return (
     <>
-      <main className="flex min-h-[96vh] flex-col text-center">
-        <h1 className="pt-6 text-4xl font-bold md:text-7xl">
+      <main className="flex min-h-screen flex-col ">
+        <h1 className="pt-6 text-center text-4xl font-bold md:text-7xl">
           Welcome to <span className="text-sky-700">CineScope</span>
         </h1>
-        <p className="mt-10 text-center text-2xl font-semibold">
-          Latest Trending Movies
-        </p>
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-4 p-10">
-          {movies.map((movie) => (
-            <Link
-              className="transition hover:opacity-80"
-              aria-label={movie.title || movie.original_title}
-              key={movie.id}
-              href={`/movies/${movie.id}`}
-            >
-              <Image
-                className="rounded-lg object-cover"
-                width={200}
-                height={300}
-                src={baseUrl + movie.poster_path || movie.backdrop_path}
-                alt={movie.title || movie.original_title}
-                title={movie.title || movie.original_title}
-              />
-            </Link>
-          ))}
-        </div>
+        <section className="px-5 lg:w-[40%]">
+          <p className="mt-10 text-center text-2xl font-semibold ">
+            Trending Movies
+          </p>
+          <div className="flex flex-col gap-4 p-4">
+            {randomMovies.map((movie) => (
+              <Link
+                className="flex flex-col items-center gap-2 rounded-md bg-slate-700/50 transition hover:opacity-80 md:flex-row md:items-start"
+                aria-label={movie.title || movie.original_title}
+                key={movie.id}
+                href={`/movies/${movie.id}`}
+              >
+                <Image
+                  height={300}
+                  width={200}
+                  className="rounded-lg"
+                  src={baseUrl + movie.poster_path}
+                  alt={movie.title || movie.original_title}
+                  title={movie.title || movie.original_title}
+                />
+                <div className="flex flex-col gap-2 p-4">
+                  <p className="border-b text-center text-xl font-semibold">
+                    {movie.title || movie.original_title}
+                  </p>
+                  <p className="text-md italic">{movie.release_date}</p>
+                  <p>{truncateString(movie.overview, 200)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </main>
       <Footer />
     </>
