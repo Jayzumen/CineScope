@@ -1,5 +1,5 @@
 // single show type
-export interface Show {
+interface Show {
   adult: boolean;
   backdrop_path: string;
   created_by: CreatedBy[];
@@ -36,7 +36,7 @@ export interface Show {
 }
 
 // trending Shows type
-export interface Shows {
+interface Shows {
   adult: boolean;
   backdrop_path: string;
   id: number;
@@ -119,7 +119,7 @@ interface VideoResults {
   results: Video[];
 }
 
-export interface Video {
+interface Video {
   iso_639_1: string;
   iso_3166_1: string;
   name: string;

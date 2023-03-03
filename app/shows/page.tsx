@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { baseUrl } from "../constants";
-import { Shows } from "./showTypes";
 
 async function getShows() {
   const response = await fetch(

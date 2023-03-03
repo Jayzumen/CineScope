@@ -1,5 +1,5 @@
 // single Movie type
-export interface Movie {
+interface Movie {
   adult: boolean;
   backdrop_path: string;
   belongs_to_collection: null;
@@ -36,7 +36,7 @@ export interface Movie {
 }
 
 //  trending Movies type
-export interface Movies {
+interface Movies {
   adult: boolean;
   backdrop_path: string;
   genre_ids: number[];
@@ -53,7 +53,7 @@ export interface Movies {
   vote_count: number;
 }
 
-export interface Video {
+interface Video {
   id: string;
   iso_639_1: string;
   iso_3166_1: string;

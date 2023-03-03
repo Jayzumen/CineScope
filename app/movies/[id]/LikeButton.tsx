@@ -1,6 +1,5 @@
 "use client";
 
-import { Movie } from "../movieTypes";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/utils/firebase";

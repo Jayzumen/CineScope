@@ -1,6 +1,5 @@
 "use client";
 
-import { Show, Video } from "../showTypes";
 import { useState } from "react";
 
 import TrailerModal from "./TrailerModal";

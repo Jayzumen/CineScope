@@ -1,7 +1,6 @@
 import { baseUrl } from "@/app/constants";
 import { Metadata } from "next";
 import Image from "next/image";
-import { Movie } from "../movieTypes";
 import LikeButton from "./LikeButton";
 import Trailer from "./Trailer";
 

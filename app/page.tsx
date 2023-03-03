@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import Footer from "./components/Footer";
 import { baseUrl } from "./constants";
-import { Movies } from "./movies/movieTypes";
 import { truncateString } from "./constants";
 
 async function getMovies() {

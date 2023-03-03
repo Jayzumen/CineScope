@@ -1,6 +1,5 @@
 "use client";
 
-import { Movie, Video } from "../movieTypes";
 import { useState } from "react";
 
 import TrailerModal from "./TrailerModal";

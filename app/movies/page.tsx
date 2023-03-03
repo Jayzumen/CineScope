@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { baseUrl } from "../constants";
-import { Movies } from "./movieTypes";
 
 async function getMovies() {
   const response = await fetch(

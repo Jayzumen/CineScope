@@ -4,7 +4,6 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import ReactPlayer from "react-player";
-import { Video } from "../movieTypes";
 
 const TrailerModal = ({
   isOpen,

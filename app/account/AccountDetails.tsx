@@ -7,8 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../constants";
-import { Movie } from "../movies/movieTypes";
-import { Show } from "../shows/showTypes";
 
 const AccountDetails = () => {
   const [user, setUser] = useState<User | null>(null);
