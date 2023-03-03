@@ -1,24 +1,12 @@
+import getMoviesDay from "@/lib/getMoviesDay";
 import Image from "next/image";
 import Link from "next/link";
 import Footer from "./components/Footer";
 import { baseUrl } from "./constants";
 import { truncateString } from "./constants";
 
-async function getMovies() {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/trending/movie/day?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`,
-    {
-      next: {
-        revalidate: 20,
-      },
-    }
-  );
-  const data = await response.json();
-  return data.results as Movies[];
-}
-
 export default async function Home() {
-  const movies: Movies[] = await getMovies();
+  const movies: Movies[] = await getMoviesDay();
 
   const randomMovies = movies.sort(() => Math.random() - 0.5).slice(0, 5);
 

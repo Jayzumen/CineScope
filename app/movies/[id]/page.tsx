@@ -1,16 +1,9 @@
 import { baseUrl } from "@/app/constants";
+import getMovie from "@/lib/getMovie";
 import { Metadata } from "next";
 import Image from "next/image";
 import LikeButton from "./LikeButton";
 import Trailer from "./Trailer";
-
-async function getMovie(id: string): Promise<Movie> {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&append_to_response=videos`
-  );
-  const data: Movie = await response.json();
-  return data;
-}
 
 export async function generateMetadata({
   params,
