@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import TrailerModal from "./TrailerModal";
+import { BsPlayCircle } from "react-icons/bs";
 
 const Trailer = ({ movie }: { movie: Movie }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,8 +16,9 @@ const Trailer = ({ movie }: { movie: Movie }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-lg bg-slate-500 py-4 px-8 text-xl font-semibold"
+        className="flex items-center gap-2 rounded-lg bg-sky-500 px-8 py-4 text-xl font-semibold transition-colors duration-200 hover:bg-sky-600 active:bg-sky-700"
       >
+        <BsPlayCircle size={30} />
         Watch Trailer
       </button>
       <TrailerModal isOpen={isOpen} setIsOpen={setIsOpen} trailer={trailer} />

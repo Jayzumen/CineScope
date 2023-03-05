@@ -1,7 +1,9 @@
 import { baseUrl } from "@/app/constants";
 import getMovie from "@/lib/getMovie";
+import getMovieCredits from "@/lib/getMovieCredits";
 import { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import LikeButton from "./LikeButton";
 import Trailer from "./Trailer";
 
@@ -34,6 +36,14 @@ export default async function MoviePage({
   params: { id: string };
 }) {
   const movie = await getMovie(params.id);
+  const credits = await getMovieCredits(params.id);
+
+  const producer = credits.crew.find((crew) => crew.job === "Producer");
+  const director = credits.crew.find((crew) => crew.job === "Director");
+  const story = credits.crew.find((crew) => crew.job === "Story");
+
+  const crew = [producer, director, story];
+
   return (
     <div className="flex flex-col">
       <div className="absolute inset-0 -z-10 h-[120vh] w-full md:h-[100vh]">
@@ -47,29 +57,68 @@ export default async function MoviePage({
       </div>
       <div className="px-10">
         <h1 className="my-4 pt-4 text-5xl font-bold">{movie.title}</h1>
-        <div className="mb-8 flex items-center  gap-4">
+        <div className="mb-4 flex items-center gap-4">
           <p className="text-2xl font-semibold italic">{movie?.tagline}</p>
           <LikeButton movie={movie} />
         </div>
+        <div className="mb-4 flex items-center gap-4 text-lg text-gray-300">
+          <p>⭐</p>
+          <p>{Math.round(movie.vote_average * 100) / 100}%</p>
+          <span>|</span>
+          <p>{movie.release_date}</p>
+          <span>|</span>
+          <p>{movie.genres.map((genre) => genre.name).join(", ")}</p>
+        </div>
+
+        <div className="mb-4 flex flex-col gap-4">
+          <p className="text-xl font-semibold">
+            Runtime:{" "}
+            <span className="text-lg font-normal italic">
+              {movie.runtime} minutes
+            </span>
+          </p>
+          <p className="max-w-[700px] text-lg">{movie.overview}</p>
+        </div>
+
         <Trailer movie={movie} />
 
-        <div className="mt-4 flex flex-col gap-4 md:flex-row">
-          <div className="flex flex-col gap-4">
-            <p className="text-xl font-semibold">
-              Release Date:{" "}
-              <span className="text-lg font-normal italic">
-                {movie.release_date}
-              </span>
-            </p>
-            <p className="text-xl font-semibold">
-              Runtime:{" "}
-              <span className="text-lg font-normal italic">
-                {movie.runtime} minutes
-              </span>
-            </p>
+        <div className="py-4">
+          <h2 className="my-4 text-3xl font-semibold">Featured Crew</h2>
+          <div className="flex flex-col gap-4 md:flex-row">
+            {crew.map((crew, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col gap-2 md:items-center md:text-center"
+              >
+                <p className="text-2xl font-semibold">{crew?.name}</p>
+                <p className="text-lg italic text-gray-300">{crew?.job}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-            <p className="text-xl font-semibold">Plot:</p>
-            <p className="max-w-[500px] text-lg">{movie.overview}</p>
+        <div className="pb-4 pt-28">
+          <h2 className="my-4 text-3xl font-semibold">Cast</h2>
+          <div className="flex flex-col gap-6 lg:flex-row">
+            {credits.cast.slice(0, 5).map((cast, idx) => (
+              <Link
+                aria-label={`Page for ${cast.name}`}
+                key={idx}
+                href={`/cast/${cast.id}`}
+                className="flex w-fit flex-col gap-2 transition hover:opacity-90 md:items-center md:text-center"
+              >
+                <Image
+                  className="rounded-md object-cover"
+                  width={300}
+                  height={400}
+                  src={baseUrl + cast.profile_path}
+                  alt={cast.name}
+                />
+
+                <p className="text-2xl font-semibold">{cast.name}</p>
+                <p className="text-lg italic text-gray-300">{cast.character}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
