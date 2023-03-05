@@ -12,7 +12,7 @@ export default async function Home() {
 
   return (
     <>
-      <main className="flex min-h-screen flex-col ">
+      <main className="flex min-h-screen flex-col">
         <h1 className="pt-6 text-center text-4xl font-bold md:text-7xl">
           Welcome to <span className="text-sky-700">CineScope</span>
         </h1>
