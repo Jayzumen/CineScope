@@ -100,25 +100,30 @@ export default async function MoviePage({
         <div className="pb-4 pt-28">
           <h2 className="my-4 text-3xl font-semibold">Cast</h2>
           <div className="flex flex-col gap-6 lg:flex-row">
-            {credits.cast.slice(0, 5).map((cast, idx) => (
-              <Link
-                aria-label={`Page for ${cast.name}`}
-                key={idx}
-                href={`/cast/${cast.id}`}
-                className="flex w-fit flex-col gap-2 transition hover:opacity-90 md:items-center md:text-center"
-              >
-                <Image
-                  className="rounded-md object-cover"
-                  width={300}
-                  height={400}
-                  src={baseUrl + cast.profile_path}
-                  alt={cast.name}
-                />
+            {credits.cast
+              .filter((actor) => actor.profile_path)
+              .slice(0, 5)
+              .map((actor, idx) => (
+                <Link
+                  aria-label={`Page for ${actor.name}`}
+                  key={idx}
+                  href={`/cast/${actor.id}`}
+                  className="flex w-fit flex-col gap-2 transition hover:opacity-90 md:items-center md:text-center"
+                >
+                  <Image
+                    className="rounded-md object-cover"
+                    width={300}
+                    height={400}
+                    src={baseUrl + actor.profile_path}
+                    alt={actor.name}
+                  />
 
-                <p className="text-2xl font-semibold">{cast.name}</p>
-                <p className="text-lg italic text-gray-300">{cast.character}</p>
-              </Link>
-            ))}
+                  <p className="text-2xl font-semibold">{actor.name}</p>
+                  <p className="text-lg italic text-gray-300">
+                    {actor.character}
+                  </p>
+                </Link>
+              ))}
           </div>
         </div>
       </div>
