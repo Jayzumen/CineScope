@@ -1,11 +1,12 @@
 import { baseUrl } from "@/app/constants";
-import getKnownFor from "@/lib/getKnownFor";
+import getKnownForMovie from "@/lib/getKnownForMovie";
 import getActor from "@/lib/getActor";
 import Image from "next/image";
 import Link from "next/link";
 import { FaBirthdayCake } from "react-icons/fa";
 import { GiHastyGrave } from "react-icons/gi";
 import getTrendingPeople from "@/lib/getTrendingPeople";
+import getKnownForTv from "@/lib/getKnownForTv";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const actor = await getActor(params.id);
@@ -24,8 +25,16 @@ export async function generateStaticParams() {
 }
 
 export default async function CastPage({ params }: { params: { id: string } }) {
-  const actor = await getActor(params.id);
-  const knownFor = await getKnownFor(params.id);
+  const actorData = getActor(params.id);
+  const knownForMovieData = getKnownForMovie(params.id);
+  const knownForTvData = getKnownForTv(params.id);
+
+  const [actor, knownForMovie, knownForTv] = await Promise.all([
+    actorData,
+    knownForMovieData,
+    knownForTvData,
+  ]);
+
   return (
     <main className="mt-10 flex flex-col gap-4 p-10 lg:flex-row">
       <div className="flex h-fit justify-center py-10 lg:w-[30%]">
@@ -54,10 +63,11 @@ export default async function CastPage({ params }: { params: { id: string } }) {
 
         <div className="mt-12 flex flex-col gap-2">
           <h2 className="py-2 text-2xl font-semibold">Known For</h2>
+          {/* Movies */}
           <div className="flex flex-wrap items-center justify-center gap-4 lg:items-start lg:justify-start">
-            {knownFor
+            {knownForMovie
               .filter((movie) => movie.poster_path)
-              .slice(0, 5)
+              .slice(0, 4)
               .map((movie) => (
                 <Link
                   aria-label={movie.title}
@@ -73,6 +83,30 @@ export default async function CastPage({ params }: { params: { id: string } }) {
                   />
                   <p className="mx-auto max-w-[200px] py-2 text-center text-xl text-gray-400">
                     {movie.title}
+                  </p>
+                </Link>
+              ))}
+          </div>
+          {/* TV Shows */}
+          <div className="flex flex-wrap items-center justify-center gap-4 lg:items-start lg:justify-start">
+            {knownForTv
+              .filter((show) => show.poster_path)
+              .slice(0, 4)
+              .map((show) => (
+                <Link
+                  aria-label={show.name}
+                  key={show.id}
+                  href={`/shows/${show.id}`}
+                  className="transition hover:opacity-90"
+                >
+                  <Image
+                    width={200}
+                    height={300}
+                    src={baseUrl + show.poster_path}
+                    alt={show.name}
+                  />
+                  <p className="mx-auto max-w-[200px] py-2 text-center text-xl text-gray-400">
+                    {show.name}
                   </p>
                 </Link>
               ))}

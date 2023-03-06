@@ -35,8 +35,10 @@ export default async function MoviePage({
 }: {
   params: { id: string };
 }) {
-  const movie = await getMovie(params.id);
-  const credits = await getMovieCredits(params.id);
+  const movieData = getMovie(params.id);
+  const creditsData = getMovieCredits(params.id);
+
+  const [movie, credits] = await Promise.all([movieData, creditsData]);
 
   const producer = credits.crew.find((crew) => crew.job === "Producer");
   const director = credits.crew.find((crew) => crew.job === "Director");

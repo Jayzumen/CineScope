@@ -10,7 +10,6 @@
     "test": "jest --watch"
   },
   "dependencies": {
-    "@next/font": "13.1.6",
     "@types/jest": "^29.4.0",
     "@types/node": "18.13.0",
     "@types/react": "18.0.28",
