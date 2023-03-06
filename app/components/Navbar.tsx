@@ -45,18 +45,16 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      getUser();
-    }
-  }, [isAuthenticated]);
+    getUser();
+  }, []);
 
   return (
     <nav className="sticky top-0 z-10 w-full bg-black/40 text-xl">
-      <div className="flex items-center justify-between py-4 px-10">
+      <div className="flex items-center justify-between px-10 py-4">
         <div className="flex items-center">
           <Link
             aria-label="Home Page Link"
-            className=" font-vibes text-2xl font-bold text-sky-600 transition hover:font-bold hover:text-sky-500"
+            className="font-vibes text-2xl font-bold  text-sky-600 transition hover:font-bold hover:text-sky-500"
             href="/"
           >
             CineScope
