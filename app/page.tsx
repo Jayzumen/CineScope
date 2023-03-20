@@ -16,7 +16,7 @@ export default async function Home() {
         <h1 className="pt-6 text-center text-4xl font-bold md:text-7xl">
           Welcome to <span className="text-sky-700">CineScope</span>
         </h1>
-        <section className="px-5 lg:w-[40%]">
+        <section className="px-5 lg:w-[70%] xl:w-[50%] 2xl:w-[40%]">
           <p className="mt-10 text-center text-2xl font-semibold ">
             Trending Movies
           </p>
