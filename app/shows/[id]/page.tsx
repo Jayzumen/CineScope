@@ -58,18 +58,24 @@ export default async function ShowPage({ params }: { params: { id: string } }) {
         />
       </div>
       <div className="px-10">
-        <h1 className="my-4 pt-4 text-5xl font-bold">{show.name}</h1>
+        <h1 className="my-4 pt-4 text-3xl font-bold md:text-5xl">
+          {show.name}
+        </h1>
         <div className="mb-4 flex items-center gap-4">
           <p className="text-2xl font-semibold italic">{show?.tagline}</p>
           <LikeButton show={show} />
         </div>
-        <div className="mb-4 flex items-center gap-4 text-lg text-gray-300">
-          <p>⭐</p>
-          <p>{Math.round(show.vote_average * 100) / 100}%</p>
+        <div className="mb-4 flex flex-wrap items-center gap-4 text-lg text-gray-300 ">
+          <div className="flex gap-1">
+            <p>⭐</p>
+            <p>{Math.round(show.vote_average * 100) / 100}%</p>
+          </div>
           <span>|</span>
           <p>{show.first_air_date}</p>
           <span>|</span>
-          <p>{show.genres.map((genre) => genre.name).join(", ")}</p>
+          <p className="text-center">
+            {show.genres.map((genre) => genre.name).join(", ")}
+          </p>
         </div>
 
         <div className="mb-4 flex flex-col gap-4">
