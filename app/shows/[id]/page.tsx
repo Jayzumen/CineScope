@@ -72,7 +72,7 @@ export default async function ShowPage({ params }: { params: { id: string } }) {
           </div>
           <span>|</span>
           <p>{show.first_air_date}</p>
-          <span>|</span>
+          <span className="hidden sm:block">|</span>
           <p className="text-center">
             {show.genres.map((genre) => genre.name).join(", ")}
           </p>

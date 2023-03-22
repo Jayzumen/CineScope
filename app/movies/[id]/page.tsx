@@ -74,7 +74,7 @@ export default async function MoviePage({
           <span>|</span>
           <p>{movie.release_date}</p>
 
-          <span>|</span>
+          <span className="hidden sm:block">|</span>
           <p className="text-center">
             {movie.genres.map((genre) => genre.name).join(", ")}
           </p>
