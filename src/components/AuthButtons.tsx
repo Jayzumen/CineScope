@@ -32,7 +32,7 @@ const AuthButtons = () => {
       onAuthStateChanged(auth, (user) => {
         if (user) {
           setIsAuthenticated(true);
-          setUser(user?.displayName);
+          setUser(user?.displayName || "User");
         } else {
           setIsAuthenticated(false);
           setUser("");

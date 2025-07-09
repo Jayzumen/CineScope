@@ -24,18 +24,24 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-10">
-        <div className="text-center">
-          <h1 className="mb-8 text-5xl font-semibold">Account</h1>
-          <p className="text-xl text-gray-600">Loading...</p>
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="flex min-h-screen flex-col items-center justify-center p-10">
+          <div className="text-center">
+            <h1 className="mb-8 bg-gradient-to-r from-purple-400 to-sky-400 bg-clip-text text-5xl font-black tracking-tight text-transparent md:text-7xl">
+              Account
+            </h1>
+            <p className="text-xl text-slate-300">Loading...</p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-10">
-      <AccountDetails />
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="flex min-h-screen flex-col items-center justify-center p-10">
+        <AccountDetails />
+      </div>
     </main>
   );
 }
