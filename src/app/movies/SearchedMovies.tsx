@@ -1,43 +1,64 @@
-import { baseUrl } from "@/lib/utils";
+import { baseUrl, truncateString } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import { Star } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const SearchedMovies = ({ searchedMovies }: { searchedMovies: Movies[] }) => {
   return (
-    <div className="flex flex-wrap justify-center gap-y-12 gap-x-8">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {searchedMovies &&
-        searchedMovies.map((movie) => {
+        searchedMovies.map((movie, index) => {
           if (movie.poster_path)
             return (
-              <Link
-                className="transition hover:opacity-80"
-                aria-label={movie.title || movie.original_title}
+              <div
                 key={movie.id}
-                href={`/movies/${movie.id}`}
+                className="animate-fade-in-up h-full"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <Image
-                  className="rounded-lg object-cover"
-                  width={300}
-                  height={400}
-                  src={baseUrl + movie.poster_path || movie.backdrop_path}
-                  alt={movie.title || movie.original_title}
-                  title={movie.title || movie.original_title}
-                />
-                <div className="flex flex-col items-center justify-center text-center">
-                  <p className="mx-auto mt-2 min-h-[40px] max-w-[250px] text-xl font-semibold">
-                    {movie.title || movie.original_title}
-                  </p>
-                  <div className="flex gap-2 text-gray-500">
-                    <p className="text-sm">⭐</p>
-                    <p className="text-sm">
-                      {Math.round(movie.vote_average * 10) / 10}
-                    </p>
-                    <p className="text-sm">|</p>
-                    <p className="text-sm">{movie.release_date}</p>
-                  </div>
-                </div>
-              </Link>
+                <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                  <Link
+                    href={`/movies/${movie.id}`}
+                    aria-label={movie.title || movie.original_title}
+                    className="flex h-full flex-col"
+                  >
+                    <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
+                      <div className="relative h-[300px] w-full">
+                        <Image
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          src={baseUrl + movie.poster_path}
+                          alt={movie.title || movie.original_title}
+                          title={movie.title || movie.original_title}
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                      <div className="absolute top-3 right-3 rounded-full bg-purple-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        <Star className="mr-1 inline h-3 w-3" />
+                        {movie.vote_average?.toFixed(1) || "N/A"}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex flex-grow flex-col p-4">
+                      <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-purple-400">
+                        {movie.title || movie.original_title}
+                      </CardTitle>
+                      <CardDescription className="mb-2 text-sm">
+                        {movie.release_date}
+                      </CardDescription>
+                      <p className="line-clamp-3 flex-grow text-xs text-slate-400">
+                        {truncateString(movie.overview, 100)}
+                      </p>
+                    </CardContent>
+                  </Link>
+                </Card>
+              </div>
             );
         })}
     </div>
