@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
-import { ModeToggle } from "./ui/mode-toggle";
 import { Button } from "./ui/button";
 
 const MobileMenu = ({
@@ -92,11 +91,6 @@ const MobileMenu = ({
                     </Button>
                   </Link>
                 )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-400">Theme</span>
-                <ModeToggle />
               </div>
             </div>
           </div>

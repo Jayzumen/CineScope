@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import MobileMenu from "./MobileMenu";
 import { auth } from "@/utils/firebase";
-import { ModeToggle } from "./ui/mode-toggle";
 import { Button } from "./ui/button";
 
 const AuthButtons = () => {
@@ -94,9 +93,6 @@ const AuthButtons = () => {
             </Link>
           </Button>
         )}
-        <div className="ml-2">
-          <ModeToggle />
-        </div>
       </div>
       <MobileMenu
         handleLogout={handleLogout}
