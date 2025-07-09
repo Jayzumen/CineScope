@@ -4,7 +4,7 @@ import LikeButton from "./LikeButton";
 import Trailer from "./Trailer";
 import getMovie from "@/lib/getMovie";
 import getMovieCredits from "@/lib/getMovieCredits";
-import { baseUrl } from "@/utils/utils";
+import { baseUrl } from "@/lib/utils";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

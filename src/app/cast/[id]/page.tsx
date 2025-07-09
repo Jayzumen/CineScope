@@ -2,7 +2,7 @@ import getActor from "@/lib/getActor";
 import getKnownForMovie from "@/lib/getKnownForMovie";
 import getKnownForTv from "@/lib/getKnownForTv";
 import getTrendingPeople from "@/lib/getTrendingPeople";
-import { baseUrl } from "@/utils/utils";
+import { baseUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { FaBirthdayCake } from "react-icons/fa";

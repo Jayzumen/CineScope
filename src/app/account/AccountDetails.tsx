@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/utils/firebase";
-import { baseUrl } from "@/utils/utils";
+import { baseUrl } from "@/lib/utils";
 
 const AccountDetails = () => {
   const [user, setUser] = useState<User | null>(null);

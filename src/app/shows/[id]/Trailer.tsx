@@ -15,7 +15,7 @@ const Trailer = ({ show }: { show: Show }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-lg bg-slate-500 py-4 px-8 text-xl font-semibold"
+        className="rounded-lg py-4 px-8 text-xl font-semibold"
       >
         Watch Trailer
       </button>

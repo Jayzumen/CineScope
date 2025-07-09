@@ -24,7 +24,7 @@ const TrailerModal = ({
             <button
               title="Close"
               className="absolute right-14 top-12 !z-40 flex h-14
-       w-14 items-center justify-center rounded-full border-2 border-slate-600 bg-black transition hover:border-white "
+       w-14 items-center justify-center rounded-full border-2 bg-black transition hover:border-white "
               onClick={() => setIsOpen(false)}
             >
               <AiOutlineClose className="h-8 w-8" />

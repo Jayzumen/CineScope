@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 
 import { Inter, Great_Vibes } from "next/font/google";
 import ToastUtils from "@/components/ToastUtils";
+import { ThemeProvider } from "@/components/theme-provider";
+import Footer from "@/components/Footer";
 
 const greatVibes = Great_Vibes({
   weight: ["400"],
@@ -30,11 +32,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${greatVibes.variable}`}>
-      <body className="flex min-h-screen flex-col bg-black font-inter text-white">
-        <Navbar />
-        <main>{children}</main>
-        <ToastUtils />
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${greatVibes.variable} flex min-h-screen flex-col`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar />
+
+          <main>{children}</main>
+
+          <ToastUtils />
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
