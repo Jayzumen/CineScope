@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { baseUrl } from "./constants";
-import { truncateString } from "./constants";
 import getMoviesDay from "@/lib/getMoviesDay";
 import Footer from "@/components/Footer";
+import { baseUrl, truncateString } from "@/utils/utils";
 
 export default async function Home() {
   const movies: Movies[] = await getMoviesDay();

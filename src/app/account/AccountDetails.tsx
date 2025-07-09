@@ -5,8 +5,8 @@ import { collection, getDocs } from "firebase/firestore";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { baseUrl } from "../constants";
 import { auth, db } from "@/utils/firebase";
+import { baseUrl } from "@/utils/utils";
 
 const AccountDetails = () => {
   const [user, setUser] = useState<User | null>(null);

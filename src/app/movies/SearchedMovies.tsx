@@ -1,7 +1,7 @@
+import { baseUrl } from "@/utils/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { baseUrl } from "../constants";
 
 const SearchedMovies = ({ searchedMovies }: { searchedMovies: Movies[] }) => {
   return (
