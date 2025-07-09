@@ -1,38 +1,69 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# CineScope
+
+CineScope is a sleek movie database web application that lets you discover, search, and explore movies, TV series, and actors using real-time data from the [TMDB API](https://www.themoviedb.org/documentation/api). Users can browse trending content, view detailed information, watch trailers, and manage their favorites—all with seamless authentication.
+
+## Features
+
+- 🔍 **Search** for movies, TV series, and actors
+- 🎬 **Trending** and daily highlights for movies and shows
+- 📝 **Detailed pages** for each movie, show, and actor
+- ❤️ **Like/Favorite** movies and shows (user-specific)
+- ▶️ **Watch trailers** directly in the app
+- 👤 **User authentication** with Google and GitHub
+- ⚡ **Responsive** and modern UI
+
+## Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org/) (App Router, SSR/SSG)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS, custom Google Fonts
+- **UI Components:** Radix UI, Lucide Icons, React Icons, ShadCN
+- **State & Auth:** Firebase (Firestore, Auth)
+- **Auth Providers:** Google, GitHub
+- **API:** TMDB API
+- **Notifications:** React Toastify, Sonner
+- **Video:** React Player
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/cinescope.git
+   cd cinescope
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+2. **Install dependencies:**
+   ```bash
+   pnpm install
+   # or
+   npm install
+   # or
+   yarn install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Set up environment variables:**
+   - Copy `.env.example` to `.env` and fill in your Firebase and TMDB API credentials.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. **Run the development server:**
+   ```bash
+   pnpm dev
+   # or
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Folder Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- `src/app/` – Main application pages and routes
+- `src/components/` – Reusable UI components
+- `src/lib/` – API and data fetching utilities
+- `src/types/` – TypeScript type definitions
+- `src/utils/` – Firebase and provider setup
 
-## Learn More
+## Credits
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Data provided by [TMDB API](https://www.themoviedb.org/documentation/api)
+- Built with [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), and [Firebase](https://firebase.google.com/)
