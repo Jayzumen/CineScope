@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Calendar, Clock, Users, Award } from "lucide-react";
-import LikeButton from "./LikeButton";
-import Trailer from "./Trailer";
+import ShowLikeButton from "./LikeButton";
+import ShowTrailer from "./Trailer";
 import getShow from "@/lib/getShow";
 import getShowCredits from "@/lib/getShowCredits";
 import { baseUrl, truncateString } from "@/lib/utils";
@@ -106,7 +106,7 @@ export default async function ShowPage({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <LikeButton show={show} />
+                    <ShowLikeButton show={show} />
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-slate-300">
@@ -153,7 +153,7 @@ export default async function ShowPage({
       {/* Trailer Section */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-7xl">
-          <Trailer show={show} />
+          <ShowTrailer show={show} />
         </div>
       </section>
 

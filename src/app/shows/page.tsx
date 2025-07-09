@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import SearchForm from "./SearchForm";
+import ShowSearchForm from "./SearchForm";
 import getShows from "@/lib/getTrendingShows";
 
 export const metadata: Metadata = {
@@ -32,7 +32,7 @@ export default async function ShowsPage() {
       {/* Search Section */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-7xl">
-          <SearchForm shows={shows} />
+          <ShowSearchForm shows={shows} />
         </div>
       </section>
     </main>

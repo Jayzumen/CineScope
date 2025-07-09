@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Calendar, Clock, Users, Award } from "lucide-react";
-import LikeButton from "./LikeButton";
-import Trailer from "./Trailer";
+import MovieLikeButton from "./LikeButton";
+import MovieTrailer from "./Trailer";
 import getMovie from "@/lib/getMovie";
 import getMovieCredits from "@/lib/getMovieCredits";
 import { baseUrl, truncateString } from "@/lib/utils";
@@ -106,7 +106,7 @@ export default async function MoviePage({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <LikeButton movie={movie} />
+                    <MovieLikeButton movie={movie} />
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-slate-300">
@@ -150,7 +150,7 @@ export default async function MoviePage({
       {/* Trailer Section */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-7xl">
-          <Trailer movie={movie} />
+          <MovieTrailer movie={movie} />
         </div>
       </section>
 

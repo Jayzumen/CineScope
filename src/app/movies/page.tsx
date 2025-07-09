@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import SearchForm from "./SearchForm";
+import MovieSearchForm from "./SearchForm";
 import getMovies from "@/lib/getTrendingMovies";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default async function MoviesPage() {
       {/* Search Section */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-7xl">
-          <SearchForm movies={movies} />
+          <MovieSearchForm movies={movies} />
         </div>
       </section>
     </main>
