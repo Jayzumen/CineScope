@@ -99,7 +99,7 @@ export default async function MoviePage({
                     </h1>
                     {movie?.tagline && (
                       <p className="mt-4 text-xl text-slate-300 italic">
-                        "{movie.tagline}"
+                        &quot;{movie.tagline}&quot;
                       </p>
                     )}
                   </div>
