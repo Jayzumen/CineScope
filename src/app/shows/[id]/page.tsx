@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Calendar, Clock, Users, Award } from "lucide-react";
+import { Star, Calendar, Clock, Award } from "lucide-react";
 import ShowLikeButton from "./LikeButton";
 import ShowTrailer from "./Trailer";
 import getShow from "@/lib/getShow";
@@ -99,7 +99,7 @@ export default async function ShowPage({
                     </h1>
                     {show?.tagline && (
                       <p className="mt-4 text-xl text-slate-300 italic">
-                        "{show.tagline}"
+                        &quot;{show.tagline}&quot;
                       </p>
                     )}
                   </div>
