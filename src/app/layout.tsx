@@ -4,9 +4,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 import { Inter, Great_Vibes } from "next/font/google";
-import ToastUtils from "@/components/ToastUtils";
 import { ThemeProvider } from "@/components/theme-provider";
 import Footer from "@/components/Footer";
+import ToastUtils from "@/components/ToastUtils";
 
 const greatVibes = Great_Vibes({
   weight: ["400"],
@@ -23,7 +23,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "CineScope",
-  description: "A movie search engine",
+  description: "A movie and TV show search engine",
 };
 
 export default function RootLayout({
