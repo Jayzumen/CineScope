@@ -66,4 +66,4 @@ CineScope is a sleek movie database web application that lets you discover, sear
 ## Credits
 
 - Data provided by [TMDB API](https://www.themoviedb.org/documentation/api)
-- Built with [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), and [Firebase](https://firebase.google.com/)
+- Built with [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), [ShadCN](https://ui.shadcn.com/) and [Firebase](https://firebase.google.com/)
