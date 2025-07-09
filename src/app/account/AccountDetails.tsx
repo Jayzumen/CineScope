@@ -70,7 +70,7 @@ const AccountDetails = () => {
             </div>
           </div>
           <h1 className="bg-gradient-to-r from-purple-400 to-sky-400 bg-clip-text text-4xl font-black tracking-tight text-transparent md:text-6xl">
-            {user?.displayName || "User"}'s Account
+            {user?.displayName || "User"}&apos;s Account
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
             Your personal collection of liked movies and TV shows

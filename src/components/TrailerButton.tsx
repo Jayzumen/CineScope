@@ -11,7 +11,7 @@ interface TrailerButtonProps {
   title: string;
 }
 
-const TrailerButton = ({ videos, title }: TrailerButtonProps) => {
+const TrailerButton = ({ videos }: TrailerButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const trailer: Video | undefined = videos.results.find(
