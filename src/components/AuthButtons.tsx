@@ -84,14 +84,14 @@ const AuthButtons = () => {
             </Button>
           </div>
         ) : (
-          <Button
-            size="sm"
-            className="bg-sky-600 text-white transition-all duration-200 hover:bg-sky-700"
-          >
-            <Link aria-label="Link to Login page" href="/login">
+          <Link aria-label="Link to Login page" href="/login">
+            <Button
+              size="sm"
+              className="cursor-pointer bg-sky-600 text-white transition-all duration-200 hover:bg-sky-700"
+            >
               Log in
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         )}
       </div>
       <MobileMenu
