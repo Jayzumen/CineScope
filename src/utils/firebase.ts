@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -15,5 +15,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+auth.settings.appVerificationDisabledForTesting = false;
+
+if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+  // connectAuthEmulator(auth, "http://localhost:9099");
+}
 
 export { auth, db };

@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import {
-  signInWithPopup,
+  signInWithRedirect,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  getRedirectResult,
 } from "firebase/auth";
 import { toast } from "react-toastify";
 import { auth } from "@/utils/firebase";
@@ -28,6 +29,50 @@ function LoginForm() {
     email: "",
     password: "",
   });
+
+  // Handle redirect result on component mount
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          toast.success("Logged in successfully!");
+          router.push("/account");
+        }
+      } catch (error: any) {
+        console.error("Redirect result error:", error);
+        let errorMessage = "Authentication failed. Please try again.";
+
+        switch (error.code) {
+          case "auth/account-exists-with-different-credential":
+            errorMessage =
+              "An account already exists with the same email address but different sign-in credentials.";
+            break;
+          case "auth/invalid-credential":
+            errorMessage = "Invalid credentials. Please try again.";
+            break;
+          case "auth/operation-not-allowed":
+            errorMessage =
+              "This sign-in method is not enabled. Please contact support.";
+            break;
+          case "auth/user-disabled":
+            errorMessage = "This account has been disabled.";
+            break;
+          case "auth/user-not-found":
+            errorMessage = "No account found with these credentials.";
+            break;
+          case "auth/network-request-failed":
+            errorMessage =
+              "Network error. Please check your connection and try again.";
+            break;
+        }
+
+        toast.error(errorMessage);
+      }
+    };
+
+    handleRedirectResult();
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -77,6 +122,10 @@ function LoginForm() {
         case "auth/invalid-email":
           errorMessage = "Please enter a valid email address.";
           break;
+        case "auth/network-request-failed":
+          errorMessage =
+            "Network error. Please check your connection and try again.";
+          break;
       }
 
       toast.error(errorMessage);
@@ -85,36 +134,49 @@ function LoginForm() {
     }
   };
 
-  const handleLogin = async (
-    provider: "google" | "github",
-    providerFunction: () => Promise<any>,
-  ) => {
-    setIsLoading(true);
+  const handleSocialLogin = async (provider: "google" | "github") => {
     setLoadingProvider(provider);
 
     try {
-      await providerFunction();
-      toast.success("Logged in successfully!");
-      router.push("/account");
+      if (provider === "google") {
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        await signInWithRedirect(auth, githubProvider);
+      }
     } catch (error: any) {
-      console.error("Login error:", error);
-      const errorMessage =
-        error.code === "auth/popup-closed-by-user"
-          ? "Login cancelled"
-          : "Login failed. Please try again.";
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
+      console.error("Social login error:", error);
       setLoadingProvider(null);
+
+      let errorMessage = "Login failed. Please try again.";
+
+      switch (error.code) {
+        case "auth/popup-closed-by-user":
+          errorMessage = "Login cancelled.";
+          break;
+        case "auth/popup-blocked":
+          errorMessage =
+            "Login popup was blocked. Please allow popups for this site.";
+          break;
+        case "auth/network-request-failed":
+          errorMessage =
+            "Network error. Please check your connection and try again.";
+          break;
+        case "auth/operation-not-allowed":
+          errorMessage =
+            "This sign-in method is not enabled. Please contact support.";
+          break;
+      }
+
+      toast.error(errorMessage);
     }
   };
 
   const logInWithGoogle = async () => {
-    await handleLogin("google", () => signInWithPopup(auth, googleProvider));
+    await handleSocialLogin("google");
   };
 
   const logInWithGithub = async () => {
-    await handleLogin("github", () => signInWithPopup(auth, githubProvider));
+    await handleSocialLogin("github");
   };
 
   const testLogin = () => {
@@ -218,7 +280,6 @@ function LoginForm() {
             </button>
           </div>
 
-          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-600"></div>
@@ -234,7 +295,7 @@ function LoginForm() {
           <div className="space-y-3">
             <Button
               type="button"
-              disabled={isLoading}
+              disabled={isLoading || loadingProvider !== null}
               onClick={logInWithGithub}
               className="group h-12 w-full border-slate-600 bg-slate-700 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-600 hover:shadow-lg"
             >
@@ -244,13 +305,13 @@ function LoginForm() {
                 <FaGithub className="mr-3 h-5 w-5 transition-transform group-hover:scale-110" />
               )}
               {loadingProvider === "github"
-                ? "Signing in..."
+                ? "Redirecting..."
                 : "Continue with GitHub"}
             </Button>
 
             <Button
               type="button"
-              disabled={isLoading}
+              disabled={isLoading || loadingProvider !== null}
               onClick={logInWithGoogle}
               className="group h-12 w-full border-slate-600 bg-slate-700 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-600 hover:shadow-lg"
             >
@@ -260,12 +321,11 @@ function LoginForm() {
                 <FcGoogle className="mr-3 h-5 w-5 transition-transform group-hover:scale-110" />
               )}
               {loadingProvider === "google"
-                ? "Signing in..."
+                ? "Redirecting..."
                 : "Continue with Google"}
             </Button>
           </div>
 
-          {/* Additional Info */}
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-400">
               By signing in, you agree to our terms of service and privacy
