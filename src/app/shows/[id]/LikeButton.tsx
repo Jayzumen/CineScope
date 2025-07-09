@@ -57,7 +57,7 @@ const LikeButton = ({ show }: { show: Show }) => {
   }, [userId]);
 
   return (
-    <button>
+    <button className="cursor-pointer">
       {liked ? (
         <AiFillHeart
           onClick={handleDelete}
