@@ -64,7 +64,10 @@ const LikeButton = ({ item, collectionName, itemName }: LikeButtonProps) => {
   }, [userId, item.id, collectionName]);
 
   return (
-    <button className="cursor-pointer">
+    <button
+      className="cursor-pointer"
+      aria-label={`${liked ? "Unlike" : "Like"} ${itemName}`}
+    >
       {liked ? (
         <AiFillHeart
           onClick={handleDelete}

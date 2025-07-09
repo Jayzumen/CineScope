@@ -74,9 +74,9 @@ export default async function Home() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-sky-600/20">
                   <Play className="h-8 w-8 text-sky-400" />
                 </div>
-                <h3 className="mb-2 text-2xl font-bold text-white">
+                <h2 className="mb-2 text-2xl font-bold text-white">
                   Latest Movies
-                </h3>
+                </h2>
                 <p className="text-slate-400">
                   Discover the newest releases and trending films
                 </p>
@@ -88,9 +88,9 @@ export default async function Home() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-600/20">
                   <TrendingUp className="h-8 w-8 text-purple-400" />
                 </div>
-                <h3 className="mb-2 text-2xl font-bold text-white">
+                <h2 className="mb-2 text-2xl font-bold text-white">
                   Popular Shows
-                </h3>
+                </h2>
                 <p className="text-slate-400">
                   Binge-worthy series and trending TV content
                 </p>
@@ -102,9 +102,9 @@ export default async function Home() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-600/20">
                   <Users className="h-8 w-8 text-orange-400" />
                 </div>
-                <h3 className="mb-2 text-2xl font-bold text-white">
+                <h2 className="mb-2 text-2xl font-bold text-white">
                   Celebrity Spotlight
-                </h3>
+                </h2>
                 <p className="text-slate-400">
                   Meet the stars behind your favorite content
                 </p>
