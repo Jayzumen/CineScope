@@ -10,6 +10,7 @@ import {
   createUserWithEmailAndPassword,
   getRedirectResult,
 } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
 import { toast } from "react-toastify";
 import { auth } from "@/utils/firebase";
 import { githubProvider, googleProvider } from "@/utils/providers";
@@ -39,32 +40,34 @@ function LoginForm() {
           toast.success("Logged in successfully!");
           router.push("/account");
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Redirect result error:", error);
         let errorMessage = "Authentication failed. Please try again.";
 
-        switch (error.code) {
-          case "auth/account-exists-with-different-credential":
-            errorMessage =
-              "An account already exists with the same email address but different sign-in credentials.";
-            break;
-          case "auth/invalid-credential":
-            errorMessage = "Invalid credentials. Please try again.";
-            break;
-          case "auth/operation-not-allowed":
-            errorMessage =
-              "This sign-in method is not enabled. Please contact support.";
-            break;
-          case "auth/user-disabled":
-            errorMessage = "This account has been disabled.";
-            break;
-          case "auth/user-not-found":
-            errorMessage = "No account found with these credentials.";
-            break;
-          case "auth/network-request-failed":
-            errorMessage =
-              "Network error. Please check your connection and try again.";
-            break;
+        if (error instanceof FirebaseError) {
+          switch (error.code) {
+            case "auth/account-exists-with-different-credential":
+              errorMessage =
+                "An account already exists with the same email address but different sign-in credentials.";
+              break;
+            case "auth/invalid-credential":
+              errorMessage = "Invalid credentials. Please try again.";
+              break;
+            case "auth/operation-not-allowed":
+              errorMessage =
+                "This sign-in method is not enabled. Please contact support.";
+              break;
+            case "auth/user-disabled":
+              errorMessage = "This account has been disabled.";
+              break;
+            case "auth/user-not-found":
+              errorMessage = "No account found with these credentials.";
+              break;
+            case "auth/network-request-failed":
+              errorMessage =
+                "Network error. Please check your connection and try again.";
+              break;
+          }
         }
 
         toast.error(errorMessage);
@@ -102,30 +105,32 @@ function LoginForm() {
         toast.success("Logged in successfully!");
       }
       router.push("/account");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Auth error:", error);
       let errorMessage = "Authentication failed. Please try again.";
 
-      switch (error.code) {
-        case "auth/user-not-found":
-          errorMessage = "No account found with this email.";
-          break;
-        case "auth/wrong-password":
-          errorMessage = "Incorrect password.";
-          break;
-        case "auth/email-already-in-use":
-          errorMessage = "An account with this email already exists.";
-          break;
-        case "auth/weak-password":
-          errorMessage = "Password should be at least 6 characters.";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "Please enter a valid email address.";
-          break;
-        case "auth/network-request-failed":
-          errorMessage =
-            "Network error. Please check your connection and try again.";
-          break;
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case "auth/user-not-found":
+            errorMessage = "No account found with this email.";
+            break;
+          case "auth/wrong-password":
+            errorMessage = "Incorrect password.";
+            break;
+          case "auth/email-already-in-use":
+            errorMessage = "An account with this email already exists.";
+            break;
+          case "auth/weak-password":
+            errorMessage = "Password should be at least 6 characters.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "Please enter a valid email address.";
+            break;
+          case "auth/network-request-failed":
+            errorMessage =
+              "Network error. Please check your connection and try again.";
+            break;
+        }
       }
 
       toast.error(errorMessage);
@@ -143,28 +148,30 @@ function LoginForm() {
       } else {
         await signInWithRedirect(auth, githubProvider);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Social login error:", error);
       setLoadingProvider(null);
 
       let errorMessage = "Login failed. Please try again.";
 
-      switch (error.code) {
-        case "auth/popup-closed-by-user":
-          errorMessage = "Login cancelled.";
-          break;
-        case "auth/popup-blocked":
-          errorMessage =
-            "Login popup was blocked. Please allow popups for this site.";
-          break;
-        case "auth/network-request-failed":
-          errorMessage =
-            "Network error. Please check your connection and try again.";
-          break;
-        case "auth/operation-not-allowed":
-          errorMessage =
-            "This sign-in method is not enabled. Please contact support.";
-          break;
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case "auth/popup-closed-by-user":
+            errorMessage = "Login cancelled.";
+            break;
+          case "auth/popup-blocked":
+            errorMessage =
+              "Login popup was blocked. Please allow popups for this site.";
+            break;
+          case "auth/network-request-failed":
+            errorMessage =
+              "Network error. Please check your connection and try again.";
+            break;
+          case "auth/operation-not-allowed":
+            errorMessage =
+              "This sign-in method is not enabled. Please contact support.";
+            break;
+        }
       }
 
       toast.error(errorMessage);
