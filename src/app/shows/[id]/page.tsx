@@ -5,7 +5,7 @@ import ShowLikeButton from "./LikeButton";
 import ShowTrailer from "./Trailer";
 import getShow from "@/lib/getShow";
 import getShowCredits from "@/lib/getShowCredits";
-import { baseUrl, truncateString } from "@/lib/utils";
+import { baseUrl } from "@/lib/utils";
 import {
   Card,
   CardContent,

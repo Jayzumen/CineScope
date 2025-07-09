@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Calendar, Clock, Users, Award } from "lucide-react";
+import { Star, Calendar, Clock, Award } from "lucide-react";
 import MovieLikeButton from "./LikeButton";
 import MovieTrailer from "./Trailer";
 import getMovie from "@/lib/getMovie";
 import getMovieCredits from "@/lib/getMovieCredits";
-import { baseUrl, truncateString } from "@/lib/utils";
+import { baseUrl } from "@/lib/utils";
 import {
   Card,
   CardContent,
