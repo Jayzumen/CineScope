@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Star, Calendar, Clock, Award } from "lucide-react";
 import ShowLikeButton from "./LikeButton";
 import ShowTrailer from "./Trailer";
+import { notFound } from "next/navigation";
 import getShow from "@/lib/getShow";
 import getShowCredits from "@/lib/getShowCredits";
-import { tmdbFetch } from "@/lib/tmdb";
 import { baseUrl } from "@/lib/utils";
 import {
   Card,
@@ -15,27 +15,26 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+export const revalidate = 3600;
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const show = await getShow(id);
-  return {
-    title: `CineScope | ${show.name}`,
-    description: show.overview,
-  };
-}
-
-export async function generateStaticParams() {
-  const data = await tmdbFetch<{ results: Show[] }>(
-    "/tv/popular?language=en-US&page=1"
-  );
-  const paths = data.results.map((show: Show) => ({
-    id: show.id.toString(),
-  }));
-  return paths;
+  try {
+    const show = await getShow(id);
+    return {
+      title: `CineScope | ${show.name}`,
+      description: show.overview,
+    };
+  } catch {
+    return {
+      title: "CineScope | TV Show",
+      description: "TV show details on CineScope.",
+    };
+  }
 }
 
 export default async function ShowPage({
@@ -44,10 +43,17 @@ export default async function ShowPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const showData = getShow(id);
-  const creditsData = getShowCredits(id);
+  let show: Show;
+  let credits: ShowCredits;
 
-  const [show, credits] = await Promise.all([showData, creditsData]);
+  try {
+    const showData = getShow(id);
+    const creditsData = getShowCredits(id);
+    [show, credits] = await Promise.all([showData, creditsData]);
+  } catch {
+    // Keep runtime/build resilient when TMDB is temporarily unavailable or rate-limited.
+    notFound();
+  }
 
   const exProducer = credits.crew.find(
     (crew) => crew.job === "Executive Producer",
