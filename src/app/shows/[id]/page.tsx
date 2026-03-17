@@ -5,6 +5,7 @@ import ShowLikeButton from "./LikeButton";
 import ShowTrailer from "./Trailer";
 import getShow from "@/lib/getShow";
 import getShowCredits from "@/lib/getShowCredits";
+import { tmdbFetch } from "@/lib/tmdb";
 import { baseUrl } from "@/lib/utils";
 import {
   Card,
@@ -28,10 +29,9 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/tv/popular?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1`,
+  const data = await tmdbFetch<{ results: Show[] }>(
+    "/tv/popular?language=en-US&page=1"
   );
-  const data = await response.json();
   const paths = data.results.map((show: Show) => ({
     id: show.id.toString(),
   }));

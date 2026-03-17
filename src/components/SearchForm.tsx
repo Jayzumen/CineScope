@@ -50,7 +50,11 @@ const SearchForm = <T,>({
       }
     } catch (error) {
       console.log(error);
-      toast(`Error searching for ${searchTitle.toLowerCase()}`);
+      toast(
+        error instanceof Error
+          ? error.message
+          : `Error searching for ${searchTitle.toLowerCase()}`
+      );
     } finally {
       setIsSearching(false);
     }

@@ -3,25 +3,13 @@
 import SearchForm from "@/components/SearchForm";
 import DefaultMovies from "./DefaultMovies";
 import SearchedMovies from "./SearchedMovies";
+import { searchMovies } from "@/lib/actions";
 
 const MovieSearchForm = ({ movies }: { movies: Movies[] }) => {
-  const searchMovie = async (query: string): Promise<Movies[] | undefined> => {
-    try {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=en-US&page=1&include_adult=false&query=${query}`,
-      );
-      const data = await res.json();
-      return data.results;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  };
-
   return (
     <SearchForm
       items={movies}
-      onSearch={searchMovie}
+      onSearch={searchMovies}
       searchTitle="Search Movies"
       placeholder="Search for a movie..."
       defaultTitle="Trending Movies"
