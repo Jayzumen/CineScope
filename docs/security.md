@@ -1,28 +1,29 @@
-# Request protection and deployment prerequisites
+# Security model
 
-Search server actions and TMDB calls enforce burst and sustained limits. Production requires an Upstash-compatible Redis REST endpoint and token; all instances must share the endpoint and namespace. Each request checks and consumes its windows atomically in Redis, with expiring keys. If the backend fails, protected operations fail closed. Development without Redis uses a bounded, process-local fallback; it is not distributed protection.
+TMDB credentials remain server-side. HTML browse requests have burst/sustained limits; text searches use only POST /api/search, including title searches originating in the catalogs. The API bounds streaming JSON bodies to 4096 bytes, validates input and returns sanitized errors, 429/Retry-After for limits and 503 for backend failure. Same-origin checking is an additional browser safeguard, not authentication: nonbrowser clients can omit Origin.
 
-Set `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `RATE_LIMIT_NAMESPACE` on the server only. Production builds that prerender catalog pages also require these values. Use a distinct namespace for previews so they do not consume production quotas. Invalid positive-integer quota settings fail closed. Backend requests time out after three seconds; TMDB requests after eight seconds, without automatic retries.
+Redis REST runs an atomic Lua operation that checks all windows before incrementing any, with expiring counters. All instances share a namespace. Production fails closed if configuration or Redis is unavailable; development alone may use bounded memory storage. Search uses IP limits and an additional verified Firebase UID quota when a bearer token is supplied. Google-signed ID tokens are checked for issuer, audience, algorithm, expiry and claims. This additive quota does not check token revocation or authorize database reads. Those are enforced separately by Firebase.
 
-## Trusted client identity
+Anonymous IPs come only from an explicitly trusted single-IP header, normalized and hashed. Unconfigured or malformed values share an anonymous bucket. These hashes are pseudonymous. Shared networks share quotas; distributed bots still require edge controls. Do not trust arbitrary forwarding headers. See the Netlify verification steps in deployment.md.
 
-Until the deployment topology is confirmed, all anonymous users share one search bucket. Arbitrary `x-forwarded-for` headers are not trusted. Set `TRUSTED_CLIENT_IP_HEADER` only after verifying that the ingress overwrites that header with a single verified client IP and direct origin access is blocked. Lists and malformed IPs fall back to the shared bucket. IPv6 representations are normalized and IP identifiers hashed before storage; hashes are pseudonymous, not anonymous. Shared networks still share limits.
+Search requests above the soft threshold require Turnstile. Verification checks hostname, action, age and provider success, then uses Redis for replay protection. Challenge failures have an accessible retry path. Missing challenge configuration yields a temporary rate limit. Client-side Firebase App Check initialization is implemented, but registration and enforcement must be activated separately.
 
-## Remaining deployment work
+TMDB results are cached for one hour (search five minutes). Only upstream cache misses and actual retry attempts consume the global TMDB budget. Requests time out after eight seconds with at most one jittered retry for network/5xx failures; 404 and 429 are not retried. Redis calls time out after three seconds. Cached results can briefly lag provider changes.
 
-- Confirm hosting/CDN and configure WAF, request-size limits, DDoS mitigation, and adaptive bot challenges. Application rate limits do not replace edge protection or stop distributed bots by themselves.
-- Validate Redis behavior under real concurrency and multiple app instances before release. Local tests cover limiter behavior, command construction, input validation, spoofed headers, and failure responses; they do not replace an actual Redis integration test.
-- Verify deployed Firestore ownership/schema rules and Firebase App Check; browser clients access Firebase directly and bypass the application's server limits. No rules were deployed by this change.
-- Add authenticated-user limits where server-verified authentication is available.
-- Configure monitoring and quotas. Current TMDB limits conservatively count helper invocations, including cache hits. Moving accounting to actual upstream misses requires a separate cache-layer change.
-- Firebase environment values are currently empty locally, so full production prerender verification requires valid configuration.
+## Firebase data
 
-Search actions return structured, sanitized errors with retry seconds instead of leaking backend errors. They use the server-action transport rather than a public HTTP API, so there is no claim of HTTP 429/Retry-After support. Future route handlers should return those explicitly.
+Rules restrict likedMovies, likedShows and library documents to their owning UID and validate exact bounded schemas. Library documents support movie/TV IDs, title/artwork/year, watchlist/watched and integer ratings 0–10. All other paths are denied. Rules validate structure, not metadata authenticity, and do not enforce collection-size or write-rate quotas. The library displays up to 200 entries per collection. Shared-list URLs contain only selected public title IDs/name; anyone with the link can view them and links cannot be revoked. Account identity, status and ratings stay out of those URLs.
 
-## Favorites rules and schema
+Emulator tests cover ownership, anonymous/cross-user denial, malformed writes and legacy favorite documents. They do not inspect the deployed project. Publish updated clients before stricter rules; existing older clients may require reload. Live authentication/provider and App Check verification remains a launch requirement.
 
-`firestore.rules` grants reads/deletes only to the owning UID in `likedMovies` and `likedShows`. Writes must contain exactly the bounded display fields generated by `favoriteDocument`; document IDs must match positive numeric media IDs. All other paths are denied. Rules validate shape and ownership, not the authenticity of TMDB metadata. They are not per-user rate limits or collection-size quotas.
+## Browser and dependency protections
 
-Previously saved full TMDB documents remain readable/deletable. Updates must replace them with the compact schema; the current client does so via `setDoc`. Deploy the updated client before deploying the rules to avoid breaking writes from older clients. Existing sessions on older code may still need a reload.
+Per-request CSP nonces restrict scripts; object embedding and framing are denied. The policy permits required Firebase, Google, Turnstile, TMDB image and privacy-enhanced YouTube origins. Inline styles remain allowed for UI libraries. Production adds HSTS and insecure-request upgrading. OAuth popups use same-origin-allow-popups. Review CSP with actual configured providers before launch.
 
-Run `pnpm test:rules` with Java 21+ and Node 24. It starts a loopback-only Firestore emulator using the `demo-cinescope` project, checks unauthenticated/cross-user access, schema abuse, owner operations and legacy documents, then stops it. No real credentials are needed. Deploying rules to a real Firebase project is a separate step: verify the target project and existing data/other clients first. These local files do not change the currently deployed rules.
+Compatible dependency updates and scoped PostCSS/gRPC patches were applied. The last audit found five moderate findings in development tooling (minimatch, glob, uuid and OpenTelemetry chains), with no high/critical findings. They are not fixed by an unsafe major transitive override. ESLint 9/Next 15 tooling requires a separately validated major migration to resolve support status and any remaining advisories. Re-run `pnpm audit` as advisories change; do not treat a historical audit as a guarantee.
+
+## Verification and limitations
+
+Unit tests cover input, redirect, media and request protection behavior. Real Redis integration tests exercise the actual Lua script under concurrent requests, all-or-nothing consumption and expiry. Firestore tests use a loopback demo emulator. Playwright covers desktop/mobile layouts, URL controls, short/empty searches, missing artwork, modal Escape/focus restoration, missing account configuration and response headers. Full lint, type checking and production build passed during implementation.
+
+External activation and testing remain necessary: Netlify ingress/WAF, multi-instance deployment, live challenge, App Check enforcement, provider login, production rules, quotas/alerts, privacy operations and performance under realistic traffic. No application can guarantee elimination of bots or abuse.

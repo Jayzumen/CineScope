@@ -1,69 +1,38 @@
 # CineScope
 
-CineScope is a sleek movie database web application that lets you discover, search, and explore movies, TV series, and actors using real-time data from the [TMDB API](https://www.themoviedb.org/documentation/api). Users can browse trending content, view detailed information, watch trailers, and manage their favorites—all with seamless authentication.
+A cinematic movie, TV and people discovery website built with Next.js, React, TypeScript, Tailwind CSS, Radix UI and Firebase. Features include unified search, filtered catalogs, trailers, regional streaming availability, season information, themed collections, and a private library with favorites, watchlists, watched status and personal ratings. Selected titles can be shared through public URLs without exposing account data.
 
-## Features
+## Local development
 
-- 🔍 **Search** for movies, TV series, and actors
-- 🎬 **Trending** and daily highlights for movies and shows
-- 📝 **Detailed pages** for each movie, show, and actor
-- ❤️ **Like/Favorite** movies and shows (user-specific)
-- ▶️ **Watch trailers** directly in the app
-- 👤 **User authentication** with Google and GitHub
-- ⚡ **Responsive** and modern UI
+Use Node 24 and pnpm 10.12.4:
 
-## Tech Stack
+```sh
+pnpm install --frozen-lockfile
+cp .env.example .env.local
+# Set TMDB_API_KEY; Firebase is optional for browsing, required for accounts.
+pnpm dev
+```
 
-- **Framework:** [Next.js](https://nextjs.org/) (App Router, SSR/SSG)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS, custom Google Fonts
-- **UI Components:** Radix UI, Lucide Icons, React Icons, ShadCN
-- **State & Auth:** Firebase (Firestore, Auth)
-- **Auth Providers:** Google, GitHub
-- **API:** TMDB API
-- **Notifications:** React Toastify, Sonner
-- **Video:** YouTube embeds in a Radix dialog
+Open http://localhost:3000. Use SITE_URL matching your browser origin. Without Firebase configuration the account UI explains that sign-in is unavailable. Development without Redis uses bounded in-memory limits; production requires shared Redis and fails closed when it is unavailable. Builds do not need live service credentials.
 
-## Getting Started
+## Validation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/cinescope.git
-   cd cinescope
-   ```
+```sh
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm test:rules  # Java 21+, local Firestore emulator, demo project only
+pnpm test:redis  # redis-server and redis-cli on PATH (or REDIS_SERVER_BIN/REDIS_CLI_BIN)
+pnpm test:e2e    # Chromium installed with pnpm exec playwright install chromium
+```
 
-2. **Install dependencies:**
-   ```bash
-   pnpm install
-   # or
-   npm install
-   # or
-   yarn install
-   ```
+Browser integration tests need a valid TMDB_API_KEY, live TMDB connectivity and no Firebase configuration. Set E2E_BASE_URL to test an already running local server. CI always runs static, unit, rules, Redis and build checks; live browser checks run when the repository has the TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
 
-3. **Set up environment variables:**
-   - Copy `.env.example` to `.env` and fill in your Firebase and TMDB API credentials.
+## Deployment and design
 
-4. **Run the development server:**
-   ```bash
-   pnpm dev
-   # or
-   npm run dev
-   # or
-   yarn dev
-   ```
+Deploy to Netlify using the checked-in netlify.toml and its automatic Next.js adapter. Follow [the Netlify checklist](docs/deployment.md), [security model](docs/security.md), and [style guide](docs/style-guide.md). Service provisioning, published Firestore rules and App Check enforcement are separate deployment steps; source code alone does not activate them.
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+The gitignored IMPROVEMENTS.local.md tracks implementation and remaining launch checks. Dependency versions are locked; use pnpm and review major migrations separately. Current moderate development-tool advisories are documented in the security guide.
 
-## Folder Structure
-
-- `src/app/` – Main application pages and routes
-- `src/components/` – Reusable UI components
-- `src/lib/` – API and data fetching utilities
-- `src/types/` – TypeScript type definitions
-- `src/utils/` – Firebase and provider setup
-
-## Credits
-
-- Data provided by [TMDB API](https://www.themoviedb.org/documentation/api)
-- Built with [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), [ShadCN](https://ui.shadcn.com/) and [Firebase](https://firebase.google.com/)
+Movie data and images are provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. Viewing availability is supplied through TMDB/JustWatch and varies by region and time. Trailers use YouTube privacy-enhanced embeds.

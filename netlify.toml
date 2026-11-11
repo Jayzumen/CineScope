@@ -1,0 +1,9 @@
+[build]
+  command = "pnpm build"
+  publish = ".next"
+[build.environment]
+  NODE_VERSION = "24"
+  PNPM_VERSION = "10.12.4"
+# Netlify automatically installs its maintained Next.js adapter.
+# Configure Redis, Firebase, Turnstile and SITE_URL in Netlify's environment UI.
+# Do not add an SPA catch-all redirect; it would bypass Next.js routing.

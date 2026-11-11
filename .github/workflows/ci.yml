@@ -1,0 +1,52 @@
+name: Validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm test:rules
+      - run: sudo apt-get update && sudo apt-get install -y redis-server redis-tools
+      - run: pnpm test:redis
+      - run: pnpm build
+      - name: Audit high and critical advisories
+        run: pnpm audit --audit-level high
+      - name: Browser integration checks (requires TMDB repository secret)
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_API_KEY: ''
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ''
+          NEXT_PUBLIC_FIREBASE_APP_ID: ''
+        run: |
+          if [ -z "$TMDB_API_KEY" ]; then
+            echo '::notice::Live browser checks skipped: TMDB_API_KEY repository secret is not configured.'
+            exit 0
+          fi
+          pnpm exec playwright install --with-deps chromium
+          pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-traces
+          path: test-results/
+          if-no-files-found: ignore
