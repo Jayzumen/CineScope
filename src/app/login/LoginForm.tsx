@@ -1,348 +1,173 @@
 "use client";
-
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import {
-  signInWithRedirect,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  getRedirectResult,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  sendPasswordResetEmail,
 } from "firebase/auth";
-import { FirebaseError } from "firebase/app";
-import { toast } from "react-toastify";
-import { auth } from "@/utils/firebase";
-import { githubProvider, googleProvider } from "@/utils/providers";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
-
-function LoginForm() {
+import { useAuth } from "@/components/AuthProvider";
+export default function LoginForm({
+  destination = "/account",
+}: {
+  destination?: string;
+}) {
+  const { user, services, loading, error: authError } = useAuth();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  // Handle redirect result on component mount
+  const [mode, setMode] = useState<"login" | "signup" | "reset">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          toast.success("Logged in successfully!");
-          router.push("/account");
-        }
-      } catch (error) {
-        console.error("Redirect result error:", error);
-        let errorMessage = "Authentication failed. Please try again.";
-
-        if (error instanceof FirebaseError) {
-          switch (error.code) {
-            case "auth/account-exists-with-different-credential":
-              errorMessage =
-                "An account already exists with the same email address but different sign-in credentials.";
-              break;
-            case "auth/invalid-credential":
-              errorMessage = "Invalid credentials. Please try again.";
-              break;
-            case "auth/operation-not-allowed":
-              errorMessage =
-                "This sign-in method is not enabled. Please contact support.";
-              break;
-            case "auth/user-disabled":
-              errorMessage = "This account has been disabled.";
-              break;
-            case "auth/user-not-found":
-              errorMessage = "No account found with these credentials.";
-              break;
-            case "auth/network-request-failed":
-              errorMessage =
-                "Network error. Please check your connection and try again.";
-              break;
-          }
-        }
-
-        toast.error(errorMessage);
-      }
-    };
-
-    handleRedirectResult();
-  }, [router]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleEmailPasswordLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+    if (user) router.replace(destination);
+  }, [user, router, destination]);
+  async function submit(provider?: "google" | "github") {
+    if (!services || pending) return;
+    setPending(true);
+    setError("");
+    setMessage("");
     try {
-      if (isSignUp) {
+      if (provider)
+        await signInWithPopup(
+          services.auth,
+          provider === "google"
+            ? new GoogleAuthProvider()
+            : new GithubAuthProvider(),
+        );
+      else if (mode === "reset") {
+        await sendPasswordResetEmail(services.auth, email.trim());
+        setMessage(
+          "If an account exists for this email, a reset link is on its way.",
+        );
+      } else if (mode === "signup")
         await createUserWithEmailAndPassword(
-          auth,
-          formData.email,
-          formData.password,
+          services.auth,
+          email.trim(),
+          password,
         );
-        toast.success("Account created successfully!");
-      } else {
-        await signInWithEmailAndPassword(
-          auth,
-          formData.email,
-          formData.password,
-        );
-        toast.success("Logged in successfully!");
-      }
-      router.push("/account");
-    } catch (error) {
-      console.error("Auth error:", error);
-      let errorMessage = "Authentication failed. Please try again.";
-
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case "auth/user-not-found":
-            errorMessage = "No account found with this email.";
-            break;
-          case "auth/wrong-password":
-            errorMessage = "Incorrect password.";
-            break;
-          case "auth/email-already-in-use":
-            errorMessage = "An account with this email already exists.";
-            break;
-          case "auth/weak-password":
-            errorMessage = "Password should be at least 6 characters.";
-            break;
-          case "auth/invalid-email":
-            errorMessage = "Please enter a valid email address.";
-            break;
-          case "auth/network-request-failed":
-            errorMessage =
-              "Network error. Please check your connection and try again.";
-            break;
-        }
-      }
-
-      toast.error(errorMessage);
+      else
+        await signInWithEmailAndPassword(services.auth, email.trim(), password);
+    } catch {
+      setError(
+        mode === "reset"
+          ? "Could not send a reset link. Please try again later."
+          : "Could not sign in. Check your details or try another sign-in method.",
+      );
     } finally {
-      setIsLoading(false);
+      setPending(false);
     }
-  };
-
-  const handleSocialLogin = async (provider: "google" | "github") => {
-    setLoadingProvider(provider);
-
-    try {
-      if (provider === "google") {
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        await signInWithRedirect(auth, githubProvider);
-      }
-    } catch (error) {
-      console.error("Social login error:", error);
-      setLoadingProvider(null);
-
-      let errorMessage = "Login failed. Please try again.";
-
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case "auth/popup-closed-by-user":
-            errorMessage = "Login cancelled.";
-            break;
-          case "auth/popup-blocked":
-            errorMessage =
-              "Login popup was blocked. Please allow popups for this site.";
-            break;
-          case "auth/network-request-failed":
-            errorMessage =
-              "Network error. Please check your connection and try again.";
-            break;
-          case "auth/operation-not-allowed":
-            errorMessage =
-              "This sign-in method is not enabled. Please contact support.";
-            break;
-        }
-      }
-
-      toast.error(errorMessage);
-    }
-  };
-
-  const logInWithGoogle = async () => {
-    await handleSocialLogin("google");
-  };
-
-  const logInWithGithub = async () => {
-    await handleSocialLogin("github");
-  };
-
-  const testLogin = () => {
-    setFormData({
-      email: "test@cinescope.com",
-      password: "test123456",
-    });
-  };
-
+  }
+  if (loading) return <p role="status">Preparing sign-in…</p>;
+  if (authError)
+    return (
+      <div className="alert" role="status">
+        {authError}
+      </div>
+    );
   return (
-    <Card className="w-full border-slate-700 bg-slate-800/50 shadow-2xl backdrop-blur-sm">
-      <CardContent className="p-8">
-        <div className="space-y-6">
-          {/* Email/Password Form */}
-          <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">
-                Email
-              </Label>
-              <div className="relative">
-                <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-slate-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  className="border-slate-600 bg-slate-700 pl-10 text-white placeholder:text-slate-400 focus:border-sky-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-slate-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Enter your password"
-                  className="border-slate-600 bg-slate-700 pr-10 pl-10 text-white placeholder:text-slate-400 focus:border-sky-500"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 transform text-slate-400 hover:text-slate-300"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="h-12 w-full bg-sky-600 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-lg"
-            >
-              {isLoading ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : null}
-              {isLoading
-                ? "Signing in..."
-                : isSignUp
-                  ? "Create Account"
-                  : "Sign In"}
-            </Button>
-
-            {/* Test Login Button */}
-            <Button
-              type="button"
-              onClick={testLogin}
-              variant="outline"
-              className="h-10 w-full border-slate-600 bg-slate-700 text-sm text-slate-300 hover:bg-slate-600"
-            >
-              Fill Test Credentials
-            </Button>
-          </form>
-
-          {/* Toggle Sign Up/In */}
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-sky-400 underline hover:text-sky-300"
-            >
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
-            </button>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-600"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-slate-800/50 px-4 text-slate-400">
-                or continue with
-              </span>
-            </div>
-          </div>
-
-          {/* Social Login Buttons */}
-          <div className="space-y-3">
-            <Button
-              type="button"
-              disabled={isLoading || loadingProvider !== null}
-              onClick={logInWithGithub}
-              className="group h-12 w-full border-slate-600 bg-slate-700 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-600 hover:shadow-lg"
-            >
-              {loadingProvider === "github" ? (
-                <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-              ) : (
-                <FaGithub className="mr-3 h-5 w-5 transition-transform group-hover:scale-110" />
-              )}
-              {loadingProvider === "github"
-                ? "Redirecting..."
-                : "Continue with GitHub"}
-            </Button>
-
-            <Button
-              type="button"
-              disabled={isLoading || loadingProvider !== null}
-              onClick={logInWithGoogle}
-              className="group h-12 w-full border-slate-600 bg-slate-700 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-600 hover:shadow-lg"
-            >
-              {loadingProvider === "google" ? (
-                <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-              ) : (
-                <FcGoogle className="mr-3 h-5 w-5 transition-transform group-hover:scale-110" />
-              )}
-              {loadingProvider === "google"
-                ? "Redirecting..."
-                : "Continue with Google"}
-            </Button>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-400">
-              By signing in, you agree to our terms of service and privacy
-              policy
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="auth-card">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
+      >
+        <h2 className="section-title">
+          {mode === "signup"
+            ? "Create an account"
+            : mode === "reset"
+              ? "Reset your password"
+              : "Sign in"}
+        </h2>
+        <label className="field">
+          Email
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            maxLength={254}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+        {mode !== "reset" && (
+          <label className="field">
+            Password
+            <input
+              required
+              type="password"
+              autoComplete={
+                mode === "signup" ? "new-password" : "current-password"
+              }
+              minLength={mode === "signup" ? 8 : 1}
+              maxLength={128}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+        )}
+        {error && (
+          <p role="alert" className="alert">
+            {error}
+          </p>
+        )}
+        {message && (
+          <p role="status" className="muted text-sm">
+            {message}
+          </p>
+        )}
+        <button className="button" disabled={pending}>
+          {pending
+            ? "Please wait…"
+            : mode === "signup"
+              ? "Create account"
+              : mode === "reset"
+                ? "Send reset link"
+                : "Sign in"}
+        </button>
+      </form>
+      <div className="mt-4 flex justify-between gap-3">
+        <button
+          className="text-link"
+          onClick={() => {
+            setMode(mode === "signup" ? "login" : "signup");
+            setError("");
+          }}
+        >
+          {mode === "signup" ? "Already a member?" : "Create an account"}
+        </button>
+        <button
+          className="text-link"
+          onClick={() => {
+            setMode(mode === "reset" ? "login" : "reset");
+            setError("");
+          }}
+        >
+          {mode === "reset" ? "Back to sign in" : "Forgot password?"}
+        </button>
+      </div>
+      <p className="auth-divider">or continue with</p>
+      <div className="auth-providers">
+        <button
+          className="button subtle"
+          disabled={pending}
+          onClick={() => submit("google")}
+        >
+          Google
+        </button>
+        <button
+          className="button subtle"
+          disabled={pending}
+          onClick={() => submit("github")}
+        >
+          GitHub
+        </button>
+      </div>
+    </div>
   );
 }
-
-export default LoginForm;

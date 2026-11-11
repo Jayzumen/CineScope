@@ -115,3 +115,42 @@ test("unrecognized paths are denied even for authenticated users", async () => {
     await assertFails(getDoc(doc(db, path)));
   }
 });
+
+test("library: private watch status and ratings enforce owner, shape, ranges, and identity", async () => {
+  const data = {
+    id: 123,
+    kind: "movie",
+    title: "Up",
+    poster_path: "/test.jpg",
+    year: "2009",
+    status: "watchlist",
+    rating: 0,
+  };
+  const db = env.authenticatedContext("alice").firestore();
+  const ref = doc(db, "users/alice/library/movie-123");
+  await assertSucceeds(setDoc(ref, data));
+  await assertSucceeds(updateDoc(ref, { status: "watched", rating: 9 }));
+  for (const ctx of [
+    env.unauthenticatedContext(),
+    env.authenticatedContext("bob"),
+  ]) {
+    const other = doc(ctx.firestore(), "users/alice/library/movie-123");
+    await assertFails(getDoc(other));
+    await assertFails(setDoc(other, data));
+    await assertFails(deleteDoc(other));
+  }
+  for (const patch of [
+    { rating: 11 },
+    { rating: -1 },
+    { rating: 1.5 },
+    { status: "public" },
+    { kind: "person" },
+    { id: 124 },
+    { title: "" },
+    { admin: true },
+    { year: "invalid" },
+    { poster_path: "https://evil.test" },
+  ])
+    await assertFails(setDoc(ref, { ...data, ...patch }));
+  await assertSucceeds(deleteDoc(ref));
+});

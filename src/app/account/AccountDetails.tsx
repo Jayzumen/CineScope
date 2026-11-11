@@ -1,252 +1,231 @@
 "use client";
-
-import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
-import Image from "@/components/Artwork";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Star, Heart, User as UserIcon } from "lucide-react";
-import { auth, db } from "@/utils/firebase";
-import { truncateString } from "@/lib/utils";
-import { artworkUrl } from "@/lib/media";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-const AccountDetails = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [shows, setShows] = useState<Show[]>([]);
-
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-
-  useEffect(
-    () =>
-      onAuthStateChanged(auth, (nextUser) => {
-        setMovies([]);
-        setShows([]);
-        setLoading(!!nextUser);
-        setLoadError(false);
-        setUser(nextUser);
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    if (!user) return;
-    let active = true;
-    Promise.all([
-      getDocs(collection(db, "users", user.uid, "likedMovies")),
-      getDocs(collection(db, "users", user.uid, "likedShows")),
-    ])
-      .then(([movieSnapshot, showSnapshot]) => {
-        if (!active || auth.currentUser?.uid !== user.uid) return;
-        setMovies(movieSnapshot.docs.map((doc) => doc.data() as Movie));
-        setShows(showSnapshot.docs.map((doc) => doc.data() as Show));
-      })
-      .catch(() => {
-        if (active) setLoadError(true);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [user]);
-
-  if (loading) return <p role="status">Loading your favorites…</p>;
-  if (loadError)
+import { useState } from "react";
+import { doc, deleteDoc } from "firebase/firestore";
+import { toast } from "sonner";
+import { Share2, Trash2 } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { useLibrary } from "@/components/LibraryProvider";
+import TitleCard from "@/components/TitleCard";
+import LibraryActions from "@/components/LibraryActions";
+import { titleOf, type MediaItem } from "@/lib/catalogTypes";
+export default function AccountDetails() {
+  const { user, services, loading, error } = useAuth();
+  const library = useLibrary();
+  const [tab, setTab] = useState("watchlist");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("title");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [pending, setPending] = useState<string | null>(null);
+  if (loading)
     return (
-      <p role="alert">Could not load your favorites. Please reload to retry.</p>
-    );
-  if (!user) return <p>Please log in to see your favorites.</p>;
-
-  return (
-    <div className="w-full max-w-7xl">
-      {/* Hero Section */}
-      <section className="mb-16 text-center">
-        <div className="animate-fade-in">
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-600/20">
-              <UserIcon className="h-10 w-10 text-purple-400" />
-            </div>
-          </div>
-          <h1 className="bg-gradient-to-r from-purple-400 to-sky-400 bg-clip-text text-4xl font-black tracking-tight text-transparent md:text-6xl">
-            {user?.displayName || "User"}&apos;s Account
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
-            Your personal collection of liked movies and TV shows
-          </p>
-        </div>
-      </section>
-
-      <div className="space-y-16">
-        {/* Liked Movies Section */}
-        <section>
-          <div className="mb-8 flex items-center gap-3">
-            <div className="h-8 w-1 rounded-full bg-purple-500"></div>
-            <h2 className="text-3xl font-bold text-white md:text-4xl">
-              Liked Movies
-            </h2>
-            <div className="flex items-center gap-2 rounded-full bg-purple-600/20 px-3 py-1">
-              <Heart className="h-4 w-4 text-purple-400" />
-              <span className="text-sm font-semibold text-white">
-                {movies.length}
-              </span>
-            </div>
-          </div>
-
-          {movies.length === 0 ? (
-            <Card className="border-slate-700 bg-slate-800/50">
-              <CardContent className="flex flex-col items-center py-12">
-                <Heart className="mb-4 h-12 w-12 text-slate-400" />
-                <p className="text-center text-slate-400">
-                  No liked movies yet.
-                </p>
-                <p className="mt-2 text-center text-sm text-slate-500">
-                  Start liking movies to see them here!
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {movies.map((movie, index) => {
-                return (
-                  <div
-                    key={movie.id}
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                      <Link
-                        href={`/movies/${movie.id}`}
-                        aria-label={movie.title || movie.original_title}
-                        className="flex h-full flex-col"
-                      >
-                        <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                          <div className="relative aspect-[2/3] w-full">
-                            <Image
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-110"
-                              src={artworkUrl(movie.poster_path)}
-                              alt={movie.title || movie.original_title}
-                              title={movie.title || movie.original_title}
-                              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                          <div className="absolute top-3 right-3 rounded-full bg-purple-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                            <Star className="mr-1 inline h-3 w-3" />
-                            {movie.vote_average?.toFixed(1) || "N/A"}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex flex-grow flex-col p-4">
-                          <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-purple-400">
-                            {movie.title || movie.original_title}
-                          </CardTitle>
-                          <CardDescription className="mb-2 text-sm">
-                            {movie.release_date}
-                          </CardDescription>
-                          <p className="line-clamp-3 flex-grow text-xs text-slate-400">
-                            {truncateString(movie.overview, 100)}
-                          </p>
-                        </CardContent>
-                      </Link>
-                    </Card>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* Liked Shows Section */}
-        <section>
-          <div className="mb-8 flex items-center gap-3">
-            <div className="h-8 w-1 rounded-full bg-orange-500"></div>
-            <h2 className="text-3xl font-bold text-white md:text-4xl">
-              Liked TV Shows
-            </h2>
-            <div className="flex items-center gap-2 rounded-full bg-orange-600/20 px-3 py-1">
-              <Heart className="h-4 w-4 text-orange-400" />
-              <span className="text-sm font-semibold text-white">
-                {shows.length}
-              </span>
-            </div>
-          </div>
-
-          {shows.length === 0 ? (
-            <Card className="border-slate-700 bg-slate-800/50">
-              <CardContent className="flex flex-col items-center py-12">
-                <Heart className="mb-4 h-12 w-12 text-slate-400" />
-                <p className="text-center text-slate-400">
-                  No liked shows yet.
-                </p>
-                <p className="mt-2 text-center text-sm text-slate-500">
-                  Start liking TV shows to see them here!
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {shows.map((show, index) => {
-                return (
-                  <div
-                    key={show.id}
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                      <Link
-                        href={`/shows/${show.id}`}
-                        aria-label={show.name || show.original_name}
-                        className="flex h-full flex-col"
-                      >
-                        <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                          <div className="relative aspect-[2/3] w-full">
-                            <Image
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-110"
-                              src={artworkUrl(show.poster_path)}
-                              alt={show.name || show.original_name}
-                              title={show.name || show.original_name}
-                              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                          <div className="absolute top-3 right-3 rounded-full bg-orange-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                            <Star className="mr-1 inline h-3 w-3" />
-                            {show.vote_average?.toFixed(1) || "N/A"}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex flex-grow flex-col p-4">
-                          <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-orange-400">
-                            {show.name || show.original_name}
-                          </CardTitle>
-                          <CardDescription className="mb-2 text-sm">
-                            {show.first_air_date}
-                          </CardDescription>
-                          <p className="line-clamp-3 flex-grow text-xs text-slate-400">
-                            {truncateString(show.overview, 100)}
-                          </p>
-                        </CardContent>
-                      </Link>
-                    </Card>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+      <div className="shell section" role="status">
+        Opening your library…
       </div>
+    );
+  if (!user)
+    return (
+      <div className="shell section">
+        <div className="empty-state">
+          <p className="eyebrow justify-center">Your personal collection</p>
+          <h1>Keep the stories that stay with you.</h1>
+          <p>
+            {error ||
+              "Save films and series, track what you’ve watched, and make room for your next favorite."}
+          </p>
+          <Link href="/login?next=/account" className="button">
+            Sign in to your library
+          </Link>
+          <Link href="/movies" className="button subtle ml-3">
+            Explore movies
+          </Link>
+        </div>
+      </div>
+    );
+  const source: MediaItem[] =
+    tab === "favorites"
+      ? library.favorites
+      : library.entries
+          .filter((e) => e.status === tab)
+          .map((e) => ({
+            id: e.id,
+            media_type: e.kind,
+            title: e.title,
+            poster_path: e.poster_path,
+            release_date: e.year,
+            vote_average: 0,
+          }));
+  const items = source
+    .filter((x) => titleOf(x).toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) =>
+      sort === "year"
+        ? (b.release_date || b.first_air_date || "").localeCompare(
+            a.release_date || a.first_air_date || "",
+          )
+        : titleOf(a).localeCompare(titleOf(b)),
+    );
+  const keyOf = (item: MediaItem) =>
+    `${item.media_type === "tv" ? "tv" : "movie"}-${item.id}`;
+  async function remove(item: MediaItem) {
+    if (!services || !user || pending) return;
+    const key = keyOf(item);
+    setPending(key);
+    try {
+      await deleteDoc(
+        doc(
+          services.db,
+          "users",
+          user.uid,
+          tab === "favorites"
+            ? item.media_type === "tv"
+              ? "likedShows"
+              : "likedMovies"
+            : "library",
+          tab === "favorites" ? String(item.id) : key,
+        ),
+      );
+      toast.success("Removed from this collection");
+      setSelected((s) => s.filter((x) => x !== key));
+    } catch {
+      toast.error("Could not remove this title. Try again.");
+    } finally {
+      setPending(null);
+    }
+  }
+  async function share() {
+    const url = new URL("/list", window.location.origin);
+    url.searchParams.set("titles", selected.join(","));
+    url.searchParams.set("name", "A few stories worth sharing");
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      toast.success(
+        "Share link copied. Anyone with it can see the selected titles.",
+      );
+    } catch {
+      toast.error("Clipboard unavailable. Try another browser.");
+    }
+  }
+  return (
+    <div className="shell">
+      <div className="page-top">
+        <p className="eyebrow">Made personal</p>
+        <h1>
+          {user.displayName
+            ? `${user.displayName.split(" ")[0]}’s library`
+            : "Your library"}
+        </h1>
+        <p>For later. For the memories. For the stories you love.</p>
+      </div>
+      <div className="tab-row" aria-label="Library collection">
+        {["watchlist", "watched", "favorites"].map((t) => (
+          <button
+            key={t}
+            aria-pressed={tab === t}
+            onClick={() => {
+              setTab(t);
+              setSelected([]);
+            }}
+          >
+            {t[0].toUpperCase() + t.slice(1)}
+          </button>
+        ))}
+      </div>
+      <div className="library-controls">
+        <input
+          className="input"
+          aria-label="Search your library"
+          placeholder="Search your collection…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <select
+          className="input"
+          aria-label="Sort library"
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+        >
+          <option value="title">Title A–Z</option>
+          <option value="year">Newest first</option>
+        </select>
+        <button
+          className="button subtle"
+          disabled={!selected.length}
+          onClick={share}
+        >
+          <Share2 size={16} />
+          Share selected ({selected.length}/12)
+        </button>
+      </div>
+      <p className="filter-note mb-6">
+        Your library is private. Sharing creates a link to only the titles you
+        select, without your account details, viewing status, or ratings. Up to
+        200 items per collection are shown.
+      </p>
+      {library.loading ? (
+        <p role="status">Loading your collection…</p>
+      ) : library.error ? (
+        <p role="alert" className="alert">
+          {library.error}
+        </p>
+      ) : items.length ? (
+        <div className="poster-grid five">
+          {items.map((item) => (
+            <div key={keyOf(item)}>
+              <TitleCard item={item} save={false} />
+              <div className="small-actions">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(keyOf(item))}
+                    aria-label={`Select ${titleOf(item)} to share`}
+                    disabled={
+                      !selected.includes(keyOf(item)) && selected.length >= 12
+                    }
+                    onChange={(e) =>
+                      setSelected((s) =>
+                        e.target.checked
+                          ? [...s, keyOf(item)]
+                          : s.filter((x) => x !== keyOf(item)),
+                      )
+                    }
+                  />{" "}
+                  Share
+                </label>
+                <button
+                  className="icon-button ml-auto"
+                  disabled={!!pending}
+                  aria-label={`Remove ${titleOf(item)}`}
+                  onClick={() => remove(item)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              {tab !== "favorites" && (
+                <LibraryActions
+                  item={item}
+                  kind={item.media_type === "tv" ? "tv" : "movie"}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <h2>
+            {query
+              ? "No matching titles"
+              : "A new collection starts with one story"}
+          </h2>
+          <p>
+            {query
+              ? "Try a different search."
+              : "Explore the catalog and save something that catches your eye."}
+          </p>
+          <Link className="button" href="/movies">
+            Find your next film
+          </Link>
+        </div>
+      )}
     </div>
   );
-};
-
-export default AccountDetails;
+}

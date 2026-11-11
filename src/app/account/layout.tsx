@@ -1,14 +1,7 @@
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "CineScope | Your Account",
-  description: "Account Page",
+export const metadata = {
+  title: "Your library",
+  robots: { index: false, follow: false },
 };
-
-export default function AccountLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }

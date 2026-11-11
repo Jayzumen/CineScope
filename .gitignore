@@ -43,3 +43,9 @@ next-env.d.ts
 .firebase/
 *-debug.log
 *-debug.log.*
+
+# Browser test artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/.pnpm-store/

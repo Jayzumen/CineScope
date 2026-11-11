@@ -25,6 +25,21 @@ service cloud.firestore {
       allow read, delete: if owner(uid);
       allow create, update: if owner(uid) && validFavorite(id, 'name', 'original_name', 'first_air_date');
     }
+    match /users/{uid}/library/{id} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid)
+        && request.resource.data.keys().hasAll(['id','kind','title','poster_path','year','status','rating'])
+        && request.resource.data.keys().hasOnly(['id','kind','title','poster_path','year','status','rating'])
+        && request.resource.data.id is int && request.resource.data.id > 0 && request.resource.data.id <= 9999999999
+        && request.resource.data.kind in ['movie','tv']
+        && id == request.resource.data.kind + '-' + string(request.resource.data.id)
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 500
+        && request.resource.data.poster_path is string && request.resource.data.poster_path.size() <= 200
+        && (request.resource.data.poster_path == '' || request.resource.data.poster_path.matches('^/[a-zA-Z0-9._-]+$'))
+        && request.resource.data.year is string && (request.resource.data.year == '' || request.resource.data.year.matches('^[0-9]{4}$'))
+        && request.resource.data.status in ['watchlist','watched']
+        && request.resource.data.rating is int && request.resource.data.rating >= 0 && request.resource.data.rating <= 10;
+    }
     // All other paths are denied implicitly, including user-profile writes.
   }
 }
