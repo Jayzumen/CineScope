@@ -1,0 +1,20 @@
+# Request protection and deployment prerequisites
+
+Search server actions and TMDB calls enforce burst and sustained limits. Production requires an Upstash-compatible Redis REST endpoint and token; all instances must share the endpoint and namespace. Each request checks and consumes its windows atomically in Redis, with expiring keys. If the backend fails, protected operations fail closed. Development without Redis uses a bounded, process-local fallback; it is not distributed protection.
+
+Set `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `RATE_LIMIT_NAMESPACE` on the server only. Production builds that prerender catalog pages also require these values. Use a distinct namespace for previews so they do not consume production quotas. Invalid positive-integer quota settings fail closed. Backend requests time out after three seconds; TMDB requests after eight seconds, without automatic retries.
+
+## Trusted client identity
+
+Until the deployment topology is confirmed, all anonymous users share one search bucket. Arbitrary `x-forwarded-for` headers are not trusted. Set `TRUSTED_CLIENT_IP_HEADER` only after verifying that the ingress overwrites that header with a single verified client IP and direct origin access is blocked. Lists and malformed IPs fall back to the shared bucket. IPv6 representations are normalized and IP identifiers hashed before storage; hashes are pseudonymous, not anonymous. Shared networks still share limits.
+
+## Remaining deployment work
+
+- Confirm hosting/CDN and configure WAF, request-size limits, DDoS mitigation, and adaptive bot challenges. Application rate limits do not replace edge protection or stop distributed bots by themselves.
+- Validate Redis behavior under real concurrency and multiple app instances before release. Local tests cover limiter behavior, command construction, input validation, spoofed headers, and failure responses; they do not replace an actual Redis integration test.
+- Verify deployed Firestore ownership/schema rules and Firebase App Check; browser clients access Firebase directly and bypass the application's server limits. No rules were deployed by this change.
+- Add authenticated-user limits where server-verified authentication is available.
+- Configure monitoring and quotas. Current TMDB limits conservatively count helper invocations, including cache hits. Moving accounting to actual upstream misses requires a separate cache-layer change.
+- Firebase environment values are currently empty locally, so full production prerender verification requires valid configuration.
+
+Search actions return structured, sanitized errors with retry seconds instead of leaking backend errors. They use the server-action transport rather than a public HTTP API, so there is no claim of HTTP 429/Retry-After support. Future route handlers should return those explicitly.

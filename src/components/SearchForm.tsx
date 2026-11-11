@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SearchFormProps<T> {
   items: T[];
-  onSearch: (query: string) => Promise<T[] | undefined>;
+  onSearch: (query: string) => Promise<{ results: T[]; error?: string }>;
   searchTitle: string;
   placeholder: string;
   defaultTitle: string;
@@ -27,33 +27,37 @@ const SearchForm = <T,>({
   renderSearchedItems,
 }: SearchFormProps<T>) => {
   const [query, setQuery] = useState("");
-  const [searchedItems, setSearchedItems] = useState<T[]>([]);
+  const [searchedItems, setSearchedItems] = useState<T[] | null>(null);
+  const [searchError, setSearchError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!query) {
+    if (!query.trim()) {
       toast("Please enter a search term");
       return;
     }
-    if (query.length < 4) {
-      toast("Please enter at least 4 characters");
+    if (query.length > 200) {
+      toast("Please enter at most 200 characters");
       return;
     }
 
     try {
       setIsSearching(true);
+      setSearchError("");
+      setSearchedItems(null);
       const searchResults = await onSearch(query);
-      if (searchResults) {
-        setSearchedItems(searchResults);
-        setQuery("");
+      if (searchResults.error) {
+        setSearchError(searchResults.error);
+      } else {
+        setSearchedItems(searchResults.results);
       }
     } catch (error) {
-      console.log(error);
+      setSearchError("Search is temporarily unavailable. Please try again.");
       toast(
         error instanceof Error
           ? error.message
-          : `Error searching for ${searchTitle.toLowerCase()}`
+          : `Error searching for ${searchTitle.toLowerCase()}`,
       );
     } finally {
       setIsSearching(false);
@@ -76,13 +80,16 @@ const SearchForm = <T,>({
               <div className="flex gap-2">
                 <Input
                   className="flex-1 border-slate-600 bg-slate-700/50 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-purple-500"
-                  type="text"
+                  type="search"
+                  aria-label={searchTitle}
+                  maxLength={200}
                   placeholder={placeholder}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
                 <Button
                   type="submit"
+                  aria-label={isSearching ? "Searching" : searchTitle}
                   disabled={isSearching}
                   className="bg-purple-600 px-6 text-white hover:bg-purple-700 disabled:opacity-50"
                 >
@@ -100,7 +107,11 @@ const SearchForm = <T,>({
 
       {/* Results Section */}
       <div className="space-y-8">
-        {searchedItems?.length === 0 ? (
+        {isSearching ? (
+          <p role="status">Searching…</p>
+        ) : searchError ? (
+          <p role="alert">{searchError}</p>
+        ) : searchedItems === null ? (
           <div>
             <div className="mb-8 flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-purple-500"></div>
@@ -118,7 +129,11 @@ const SearchForm = <T,>({
                 Search Results
               </h2>
             </div>
-            {renderSearchedItems(searchedItems)}
+            {searchedItems.length ? (
+              renderSearchedItems(searchedItems)
+            ) : (
+              <p role="status">No matches found. Try another title.</p>
+            )}
           </div>
         )}
       </div>

@@ -1,66 +1,22 @@
 import "server-only";
-
-type LimitConfig = {
-  key: string;
-  maxRequests: number;
-  windowMs: number;
-  message?: string;
-};
-
-type RateLimitRecord = {
-  count: number;
-  resetAt: number;
-};
-
-const requestStore = new Map<string, RateLimitRecord>();
-
-const now = () => Date.now();
-
-function checkWindow(config: LimitConfig) {
-  const current = now();
-  const existing = requestStore.get(config.key);
-
-  if (!existing || current >= existing.resetAt) {
-    requestStore.set(config.key, {
-      count: 1,
-      resetAt: current + config.windowMs,
+import {
+  createMemoryLimiter,
+  enforceSharedLimits,
+  type LimitConfig,
+} from "./requestProtection";
+const localLimiter = createMemoryLimiter();
+export async function enforceRateLimit(limits: LimitConfig[]) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (url && token) {
+    return enforceSharedLimits(limits, {
+      url,
+      token,
+      namespace: process.env.RATE_LIMIT_NAMESPACE ?? "cinescope",
     });
-
-    return {
-      allowed: true,
-      remaining: Math.max(config.maxRequests - 1, 0),
-      retryAfterMs: config.windowMs,
-    };
   }
-
-  if (existing.count >= config.maxRequests) {
-    return {
-      allowed: false,
-      remaining: 0,
-      retryAfterMs: Math.max(existing.resetAt - current, 0),
-    };
+  if (url || token || process.env.NODE_ENV === "production") {
+    throw new Error("Shared request protection is not configured.");
   }
-
-  existing.count += 1;
-  requestStore.set(config.key, existing);
-
-  return {
-    allowed: true,
-    remaining: Math.max(config.maxRequests - existing.count, 0),
-    retryAfterMs: Math.max(existing.resetAt - current, 0),
-  };
+  localLimiter(limits);
 }
-
-export function enforceRateLimit(configs: LimitConfig[]) {
-  for (const config of configs) {
-    const result = checkWindow(config);
-
-    if (!result.allowed) {
-      throw new Error(
-        config.message ??
-          `Too many requests. Please try again in ${Math.ceil(result.retryAfterMs / 1000)} seconds.`
-      );
-    }
-  }
-}
-

@@ -1,54 +1,66 @@
 "use server";
-
 import { headers } from "next/headers";
 import { enforceRateLimit } from "@/lib/rateLimit";
+import {
+  clientKey,
+  positiveInteger,
+  RequestLimitError,
+  validateSearchQuery,
+} from "@/lib/requestProtection";
 import { tmdbFetch } from "@/lib/tmdb";
 
-async function getClientIp() {
-  const headerStore = await headers();
-  const forwardedFor = headerStore.get("x-forwarded-for");
-  const realIp = headerStore.get("x-real-ip");
-  const cfIp = headerStore.get("cf-connecting-ip");
-
-  return (
-    forwardedFor?.split(",")[0]?.trim() ??
-    realIp ??
-    cfIp ??
-    "unknown-client"
-  );
+async function search<T>(
+  kind: "movie" | "tv",
+  input: unknown,
+): Promise<{ results: T[]; error?: string }> {
+  let query: string;
+  try {
+    query = validateSearchQuery(input);
+  } catch {
+    return {
+      results: [],
+      error: "Enter a search term between 1 and 200 characters.",
+    };
+  }
+  try {
+    const key = clientKey(
+      await headers(),
+      process.env.TRUSTED_CLIENT_IP_HEADER,
+    );
+    await enforceRateLimit([
+      {
+        key: `search:${key}:minute`,
+        maxRequests: positiveInteger(
+          process.env.SEARCH_RATE_LIMIT_PER_MINUTE,
+          20,
+        ),
+        windowMs: 60_000,
+      },
+      {
+        key: `search:${key}:hour`,
+        maxRequests: positiveInteger(
+          process.env.SEARCH_RATE_LIMIT_PER_HOUR,
+          300,
+        ),
+        windowMs: 3_600_000,
+      },
+    ]);
+    return await tmdbFetch<{ results: T[] }>(
+      `/search/${kind}?language=en-US&page=1&include_adult=false&query=${encodeURIComponent(query)}`,
+    );
+  } catch (error) {
+    return {
+      results: [],
+      error:
+        error instanceof RequestLimitError
+          ? error.message
+          : "Search is temporarily unavailable. Please try again later.",
+    };
+  }
 }
-
-async function enforceSearchRateLimit() {
-  const ip = await getClientIp();
-
-  enforceRateLimit([
-    {
-      key: `search:${ip}:minute`,
-      maxRequests: Number(process.env.SEARCH_RATE_LIMIT_PER_MINUTE ?? "20"),
-      windowMs: 60_000,
-      message: "Too many searches. Please wait a minute and try again.",
-    },
-    {
-      key: `search:${ip}:hour`,
-      maxRequests: Number(process.env.SEARCH_RATE_LIMIT_PER_HOUR ?? "300"),
-      windowMs: 3_600_000,
-      message: "Hourly search limit reached. Please try again later.",
-    },
-  ]);
+export async function searchMovies(query: string) {
+  return search<Movies>("movie", query);
 }
-
-export async function searchMovies(query: string): Promise<Movies[]> {
-  await enforceSearchRateLimit();
-  const data = await tmdbFetch<{ results: Movies[] }>(
-    `/search/movie?language=en-US&page=1&include_adult=false&query=${encodeURIComponent(query)}`
-  );
-  return data.results as Movies[];
-}
-
-export async function searchShows(query: string): Promise<Shows[]> {
-  await enforceSearchRateLimit();
-  const data = await tmdbFetch<{ results: Shows[] }>(
-    `/search/tv?language=en-US&page=1&include_adult=false&query=${encodeURIComponent(query)}`
-  );
-  return data.results as Shows[];
+export async function searchShows(query: string) {
+  return search<Shows>("tv", query);
 }
