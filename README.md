@@ -27,7 +27,7 @@ pnpm test:redis  # redis-server and redis-cli on PATH (or REDIS_SERVER_BIN/REDIS
 pnpm test:e2e    # Chromium installed with pnpm exec playwright install chromium
 ```
 
-Browser integration tests need a valid TMDB_API_KEY, live TMDB connectivity and no Firebase configuration. Set E2E_BASE_URL to test an already running local server. CI always runs static, unit, rules, Redis and build checks; live browser checks run when the repository has the TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
+Browser integration tests include automated accessibility scans. They need a valid TMDB_API_KEY, live TMDB connectivity and no Firebase configuration. Set E2E_BASE_URL to test an already running local server. CI always runs static, unit, rules, Redis and build checks; live browser checks run when the repository has the TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
 
 ## Deployment and design
 

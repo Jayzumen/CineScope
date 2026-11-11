@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "@playwright/test";
 test("homepage, mobile navigation, layout and image placeholders", async ({
   page,
@@ -154,3 +155,18 @@ test("search rejects cross-origin requests and malformed bodies", async ({
   });
   expect(oversized.status()).toBe(400);
 });
+
+for (const path of ["/", "/movies", "/search", "/login"]) {
+  test(`accessible landmarks, labels and contrast: ${path}`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    await expect(
+      page.getByRole("link", { name: "CineScope home", exact: true }).first(),
+    ).toBeVisible();
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  });
+}

@@ -24,6 +24,6 @@ Compatible dependency updates and scoped PostCSS/gRPC patches were applied. The 
 
 ## Verification and limitations
 
-Unit tests cover input, redirect, media and request protection behavior. Real Redis integration tests exercise the actual Lua script under concurrent requests, all-or-nothing consumption and expiry. Firestore tests use a loopback demo emulator. Playwright covers desktop/mobile layouts, URL controls, short/empty searches, missing artwork, modal Escape/focus restoration, missing account configuration and response headers. Full lint, type checking and production build passed during implementation.
+Unit tests cover input, redirect, media and request protection behavior. Real Redis integration tests exercise the actual Lua script under concurrent requests, all-or-nothing consumption and expiry. Firestore tests use a loopback demo emulator. Playwright covers desktop/mobile layouts, URL controls, short/empty searches, missing artwork, modal Escape/focus restoration, missing account configuration and response headers. Eight automated WCAG-tagged axe scans passed across desktop/mobile home, catalog, search and login. These scans do not certify full accessibility. Full lint, type checking and production build passed during implementation.
 
 External activation and testing remain necessary: Netlify ingress/WAF, multi-instance deployment, live challenge, App Check enforcement, provider login, production rules, quotas/alerts, privacy operations and performance under realistic traffic. No application can guarantee elimination of bots or abuse.
