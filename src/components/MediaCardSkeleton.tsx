@@ -5,7 +5,7 @@ const MediaCardSkeleton = () => {
   return (
     <Card className="flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0">
       <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-        <div className="relative h-[300px] w-full">
+        <div className="relative aspect-[2/3] w-full">
           <Skeleton className="h-full w-full" />
         </div>
       </CardHeader>

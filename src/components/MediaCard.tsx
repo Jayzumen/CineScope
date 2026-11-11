@@ -1,5 +1,6 @@
-import { baseUrl, truncateString } from "@/lib/utils";
-import Image from "next/image";
+import { truncateString } from "@/lib/utils";
+import { artworkUrl } from "@/lib/media";
+import Image from "@/components/Artwork";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import {
@@ -32,8 +33,6 @@ const MediaCard = ({
   href,
   index,
 }: MediaCardProps) => {
-  if (!posterPath) return null;
-
   return (
     <div
       className="animate-fade-in-up h-full"
@@ -46,11 +45,11 @@ const MediaCard = ({
           className="flex h-full flex-col"
         >
           <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-            <div className="relative h-[300px] w-full">
+            <div className="relative aspect-[2/3] w-full">
               <Image
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
-                src={baseUrl + posterPath}
+                src={artworkUrl(posterPath)}
                 alt={title || originalTitle}
                 title={title || originalTitle}
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"

@@ -2,8 +2,9 @@ import getActor from "@/lib/getActor";
 import getKnownForMovie from "@/lib/getKnownForMovie";
 import getKnownForTv from "@/lib/getKnownForTv";
 import getTrendingPeople from "@/lib/getTrendingPeople";
-import { baseUrl, truncateString } from "@/lib/utils";
-import Image from "next/image";
+import { truncateString } from "@/lib/utils";
+import { artworkUrl } from "@/lib/media";
+import Image from "@/components/Artwork";
 import Link from "next/link";
 import { FaBirthdayCake } from "react-icons/fa";
 import { GiHastyGrave } from "react-icons/gi";
@@ -72,22 +73,13 @@ export default async function CastPage({
               <div className="animate-fade-in-up flex justify-center lg:justify-start">
                 <Card className="group h-fit overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
                   <div className="relative h-[450px] w-[300px]">
-                    {actor.profile_path ? (
-                      <Image
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        src={baseUrl + actor.profile_path}
-                        alt={actor.name}
-                        sizes="(max-width: 1024px) 100vw, 300px"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-slate-700">
-                        <div className="text-center text-slate-400">
-                          <div className="mb-2 text-6xl">🎭</div>
-                          <p className="text-sm">No Image Available</p>
-                        </div>
-                      </div>
-                    )}
+                    <Image
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      src={artworkUrl(actor.profile_path)}
+                      alt={actor.name}
+                      sizes="300px"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                   </div>
                 </Card>
@@ -173,53 +165,50 @@ export default async function CastPage({
               </div>
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {knownForMovie
-                .filter((movie) => movie.poster_path)
-                .slice(0, 8)
-                .map((movie, index) => (
-                  <div
-                    key={movie.id}
-                    className="animate-fade-in-up h-full"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                      <Link
-                        href={`/movies/${movie.id}`}
-                        aria-label={movie.title}
-                        className="flex h-full flex-col"
-                      >
-                        <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                          <div className="relative h-[300px] w-full">
-                            <Image
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-110"
-                              src={baseUrl + movie.poster_path}
-                              alt={movie.title}
-                              title={movie.title}
-                              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                          <div className="absolute top-3 right-3 rounded-full bg-sky-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                            <Star className="mr-1 inline h-3 w-3" />
-                            {movie.vote_average?.toFixed(1) || "N/A"}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex flex-grow flex-col p-4">
-                          <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-sky-400">
-                            {movie.title}
-                          </CardTitle>
-                          <CardDescription className="mb-2 text-sm">
-                            {movie.release_date}
-                          </CardDescription>
-                          <p className="line-clamp-3 flex-grow text-xs text-slate-400">
-                            {truncateString(movie.overview, 100)}
-                          </p>
-                        </CardContent>
-                      </Link>
-                    </Card>
-                  </div>
-                ))}
+              {knownForMovie.slice(0, 8).map((movie, index) => (
+                <div
+                  key={movie.id}
+                  className="animate-fade-in-up h-full"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                    <Link
+                      href={`/movies/${movie.id}`}
+                      aria-label={movie.title}
+                      className="flex h-full flex-col"
+                    >
+                      <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
+                        <div className="relative aspect-[2/3] w-full">
+                          <Image
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            src={artworkUrl(movie.poster_path)}
+                            alt={movie.title}
+                            title={movie.title}
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                        <div className="absolute top-3 right-3 rounded-full bg-sky-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                          <Star className="mr-1 inline h-3 w-3" />
+                          {movie.vote_average?.toFixed(1) || "N/A"}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="flex flex-grow flex-col p-4">
+                        <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-sky-400">
+                          {movie.title}
+                        </CardTitle>
+                        <CardDescription className="mb-2 text-sm">
+                          {movie.release_date}
+                        </CardDescription>
+                        <p className="line-clamp-3 flex-grow text-xs text-slate-400">
+                          {truncateString(movie.overview, 100)}
+                        </p>
+                      </CardContent>
+                    </Link>
+                  </Card>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -238,53 +227,50 @@ export default async function CastPage({
               </div>
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {knownForTv
-                .filter((show) => show.poster_path)
-                .slice(0, 8)
-                .map((show, index) => (
-                  <div
-                    key={show.id}
-                    className="animate-fade-in-up h-full"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                      <Link
-                        href={`/shows/${show.id}`}
-                        aria-label={show.name}
-                        className="flex h-full flex-col"
-                      >
-                        <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                          <div className="relative h-[300px] w-full">
-                            <Image
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-110"
-                              src={baseUrl + show.poster_path}
-                              alt={show.name}
-                              title={show.name}
-                              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                          <div className="absolute top-3 right-3 rounded-full bg-purple-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                            <Star className="mr-1 inline h-3 w-3" />
-                            {show.vote_average?.toFixed(1) || "N/A"}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex flex-grow flex-col p-4">
-                          <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-purple-400">
-                            {show.name}
-                          </CardTitle>
-                          <CardDescription className="mb-2 text-sm">
-                            {show.first_air_date}
-                          </CardDescription>
-                          <p className="line-clamp-3 flex-grow text-xs text-slate-400">
-                            {truncateString(show.overview, 100)}
-                          </p>
-                        </CardContent>
-                      </Link>
-                    </Card>
-                  </div>
-                ))}
+              {knownForTv.slice(0, 8).map((show, index) => (
+                <div
+                  key={show.id}
+                  className="animate-fade-in-up h-full"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                    <Link
+                      href={`/shows/${show.id}`}
+                      aria-label={show.name}
+                      className="flex h-full flex-col"
+                    >
+                      <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
+                        <div className="relative aspect-[2/3] w-full">
+                          <Image
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            src={artworkUrl(show.poster_path)}
+                            alt={show.name}
+                            title={show.name}
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                        <div className="absolute top-3 right-3 rounded-full bg-purple-600 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                          <Star className="mr-1 inline h-3 w-3" />
+                          {show.vote_average?.toFixed(1) || "N/A"}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="flex flex-grow flex-col p-4">
+                        <CardTitle className="mb-2 line-clamp-2 text-lg font-semibold transition-colors group-hover:text-purple-400">
+                          {show.name}
+                        </CardTitle>
+                        <CardDescription className="mb-2 text-sm">
+                          {show.first_air_date}
+                        </CardDescription>
+                        <p className="line-clamp-3 flex-grow text-xs text-slate-400">
+                          {truncateString(show.overview, 100)}
+                        </p>
+                      </CardContent>
+                    </Link>
+                  </Card>
+                </div>
+              ))}
             </div>
           </div>
         </section>

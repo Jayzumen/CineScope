@@ -1,60 +1,53 @@
 "use client";
+import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
+import type { TrailerVideo } from "@/lib/media";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
-import { FaVolumeMute, FaVolumeUp } from "react-icons/fa";
-import ReactPlayer from "react-player";
-
-interface TrailerModalProps {
-  isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
-  trailer: Video | undefined;
-}
-
-const TrailerModal = ({ isOpen, setIsOpen, trailer }: TrailerModalProps) => {
-  const [muted, setMuted] = useState(true);
-
+export default function TrailerModal({
+  trailer,
+  title,
+}: {
+  trailer: TrailerVideo;
+  title: string;
+}) {
   return (
-    <div className="">
-      {isOpen && (
-        <div className="absolute top-0 left-0 h-screen w-full overflow-hidden bg-black/40">
-          <div className="fixed top-10 right-0 left-0 z-50 mx-auto overflow-hidden rounded-md p-10">
-            <button
-              title="Close"
-              className="absolute top-12 right-14 !z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 bg-black transition hover:border-white"
-              onClick={() => setIsOpen(false)}
-            >
-              <AiOutlineClose className="h-8 w-8" />
-            </button>
-
-            <div className="relative min-h-[90vh] min-w-full">
-              <ReactPlayer
-                src={`https://www.youtube.com/watch?v=${trailer?.key}`}
-                width="100%"
-                height="100%"
-                style={{ position: "absolute", top: "0", left: "0" }}
-                playing
-                muted={muted}
-              />
-              <div className="absolute bottom-10 flex w-full items-center justify-between px-10">
-                <button
-                  title="Mute"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[gray] bg-black transition hover:border-white"
-                  onClick={() => setMuted(!muted)}
-                >
-                  {muted ? (
-                    <FaVolumeMute className="h-6 w-6" />
-                  ) : (
-                    <FaVolumeUp className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+    <Dialog.Portal>
+      <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/80" />
+      <Dialog.Content className="fixed top-1/2 left-1/2 z-[61] max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-slate-700 bg-slate-950 p-4 shadow-2xl sm:p-6">
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <Dialog.Title className="text-lg font-semibold text-white">
+            {title} — trailer
+          </Dialog.Title>
+          <Dialog.Close
+            aria-label="Close trailer"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-white hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            <X aria-hidden />
+          </Dialog.Close>
         </div>
-      )}
-    </div>
+        <Dialog.Description className="mb-4 text-sm text-slate-400">
+          Video hosted on YouTube. Use the player controls for playback, sound,
+          and captions.
+        </Dialog.Description>
+        <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+          <iframe
+            className="h-full w-full"
+            title={`${title} trailer`}
+            src={`https://www.youtube-nocookie.com/embed/${trailer.key}?autoplay=1&mute=1&rel=0`}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+        <a
+          href={`https://www.youtube.com/watch?v=${trailer.key}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex min-h-11 items-center text-sm text-sky-300 underline underline-offset-4 focus-visible:outline-2"
+        >
+          Open on YouTube if playback is unavailable
+        </a>
+      </Dialog.Content>
+    </Dialog.Portal>
   );
-};
-
-export default TrailerModal;
+}

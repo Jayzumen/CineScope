@@ -1,9 +1,10 @@
-import Image from "next/image";
+import Image from "@/components/Artwork";
 import Link from "next/link";
 import getMoviesDay from "@/lib/getMoviesDay";
 import getShows from "@/lib/getTrendingShows";
 import getTrendingPeople from "@/lib/getTrendingPeople";
-import { baseUrl, truncateString } from "@/lib/utils";
+import { truncateString } from "@/lib/utils";
+import { artworkUrl } from "@/lib/media";
 import {
   Card,
   CardHeader,
@@ -147,11 +148,11 @@ export default async function Home() {
                       className="flex h-full flex-col"
                     >
                       <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                        <div className="relative h-[300px] w-full">
+                        <div className="relative aspect-[2/3] w-full">
                           <Image
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            src={baseUrl + movie.poster_path}
+                            src={artworkUrl(movie.poster_path)}
                             alt={movie.title || movie.original_title}
                             title={movie.title || movie.original_title}
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -216,11 +217,11 @@ export default async function Home() {
                       className="flex h-full flex-col"
                     >
                       <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                        <div className="relative h-[300px] w-full">
+                        <div className="relative aspect-[2/3] w-full">
                           <Image
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            src={baseUrl + show.poster_path}
+                            src={artworkUrl(show.poster_path)}
                             alt={show.name || show.original_name}
                             title={show.name || show.original_name}
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -280,7 +281,7 @@ export default async function Home() {
                           <Image
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            src={baseUrl + person.profile_path}
+                            src={artworkUrl(person.profile_path)}
                             alt={person.name}
                             title={person.name}
                             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"

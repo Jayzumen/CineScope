@@ -22,7 +22,7 @@ CineScope is a sleek movie database web application that lets you discover, sear
 - **Auth Providers:** Google, GitHub
 - **API:** TMDB API
 - **Notifications:** React Toastify, Sonner
-- **Video:** React Player
+- **Video:** YouTube embeds in a Radix dialog
 
 ## Getting Started
 

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/Artwork";
 import Link from "next/link";
 import { Star, Calendar, Clock, Award } from "lucide-react";
 import ShowLikeButton from "./LikeButton";
@@ -6,7 +6,7 @@ import ShowTrailer from "./Trailer";
 import { notFound } from "next/navigation";
 import getShow from "@/lib/getShow";
 import getShowCredits from "@/lib/getShowCredits";
-import { baseUrl } from "@/lib/utils";
+import { artworkUrl } from "@/lib/media";
 import {
   Card,
   CardContent,
@@ -72,9 +72,10 @@ export default async function ShowPage({
         <div className="absolute inset-0">
           <Image
             priority={true}
+            sizes="100vw"
             className="object-cover"
             fill={true}
-            src={baseUrl + show.backdrop_path || show.poster_path}
+            src={artworkUrl(show.backdrop_path, "w1280", show.poster_path)}
             alt={show.name || show.original_name}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40"></div>
@@ -89,7 +90,7 @@ export default async function ShowPage({
                   <Image
                     className="object-cover"
                     fill
-                    src={baseUrl + show.poster_path}
+                    src={artworkUrl(show.poster_path)}
                     alt={show.name || show.original_name}
                     sizes="(max-width: 1024px) 280px, 280px"
                   />
@@ -207,46 +208,43 @@ export default async function ShowPage({
             <h2 className="text-3xl font-bold text-white md:text-4xl">Cast</h2>
           </div>
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {credits.cast
-              .filter((actor) => actor.profile_path)
-              .slice(0, 10)
-              .map((actor, idx) => (
-                <div
-                  key={actor.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${idx * 0.1}s` }}
-                >
-                  <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                    <Link
-                      href={`/cast/${actor.id}`}
-                      aria-label={`Page for ${actor.name}`}
-                      className="flex h-full flex-col"
-                    >
-                      <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
-                        <div className="relative h-[200px] w-full">
-                          <Image
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            src={baseUrl + actor.profile_path}
-                            alt={actor.name}
-                            title={actor.name}
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                          />
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                      </CardHeader>
-                      <CardContent className="flex flex-grow flex-col p-3">
-                        <CardTitle className="mb-1 line-clamp-2 text-sm font-semibold transition-colors group-hover:text-orange-400">
-                          {actor.name}
-                        </CardTitle>
-                        <CardDescription className="line-clamp-2 flex-grow text-xs text-slate-400">
-                          {actor.character}
-                        </CardDescription>
-                      </CardContent>
-                    </Link>
-                  </Card>
-                </div>
-              ))}
+            {credits.cast.slice(0, 10).map((actor, idx) => (
+              <div
+                key={actor.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${idx * 0.1}s` }}
+              >
+                <Card className="group flex h-full flex-col overflow-hidden border-slate-700 bg-slate-800/50 py-0 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                  <Link
+                    href={`/cast/${actor.id}`}
+                    aria-label={`Page for ${actor.name}`}
+                    className="flex h-full flex-col"
+                  >
+                    <CardHeader className="relative flex-shrink-0 overflow-hidden p-0">
+                      <div className="relative h-[200px] w-full">
+                        <Image
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          src={artworkUrl(actor.profile_path)}
+                          alt={actor.name}
+                          title={actor.name}
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    </CardHeader>
+                    <CardContent className="flex flex-grow flex-col p-3">
+                      <CardTitle className="mb-1 line-clamp-2 text-sm font-semibold transition-colors group-hover:text-orange-400">
+                        {actor.name}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-2 flex-grow text-xs text-slate-400">
+                        {actor.character}
+                      </CardDescription>
+                    </CardContent>
+                  </Link>
+                </Card>
+              </div>
+            ))}
           </div>
         </div>
       </section>
