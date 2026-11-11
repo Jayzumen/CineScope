@@ -21,43 +21,50 @@ const AccountDetails = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [shows, setShows] = useState<Show[]>([]);
 
-  useEffect(() => {
-    const getUser = async () => {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setUser(user);
-        } else {
-          setUser(null);
-        }
-      });
-    };
-    getUser();
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, (nextUser) => {
+        setMovies([]);
+        setShows([]);
+        setLoading(!!nextUser);
+        setLoadError(false);
+        setUser(nextUser);
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!user) return;
-    const getMovies = async (user: User) => {
-      const colRef = collection(db, "users", user?.uid, "likedMovies");
-      const snapshot = await getDocs(colRef);
-      const movies: Movie[] = [];
-      snapshot.forEach((doc) => {
-        movies.push(doc.data() as Movie);
+    let active = true;
+    Promise.all([
+      getDocs(collection(db, "users", user.uid, "likedMovies")),
+      getDocs(collection(db, "users", user.uid, "likedShows")),
+    ])
+      .then(([movieSnapshot, showSnapshot]) => {
+        if (!active || auth.currentUser?.uid !== user.uid) return;
+        setMovies(movieSnapshot.docs.map((doc) => doc.data() as Movie));
+        setShows(showSnapshot.docs.map((doc) => doc.data() as Show));
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
-      setMovies(movies);
+    return () => {
+      active = false;
     };
-    const getShows = async (user: User) => {
-      const colRef = collection(db, "users", user?.uid, "likedShows");
-      const snapshot = await getDocs(colRef);
-      const shows: Show[] = [];
-      snapshot.forEach((doc) => {
-        shows.push(doc.data() as Show);
-      });
-      setShows(shows);
-    };
-
-    getMovies(user);
-    getShows(user);
   }, [user]);
+
+  if (loading) return <p role="status">Loading your favorites…</p>;
+  if (loadError)
+    return (
+      <p role="alert">Could not load your favorites. Please reload to retry.</p>
+    );
+  if (!user) return <p>Please log in to see your favorites.</p>;
 
   return (
     <div className="w-full max-w-7xl">

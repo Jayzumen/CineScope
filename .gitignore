@@ -38,3 +38,8 @@ next-env.d.ts
 
 # Local redesign and security roadmap
 /IMPROVEMENTS.local.md
+
+# Firebase emulator artifacts
+.firebase/
+*-debug.log
+*-debug.log.*

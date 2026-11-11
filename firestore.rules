@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function validFavorite(id, titleField, originalField, dateField) {
+      let d = request.resource.data;
+      let fields = ['id', 'poster_path', 'overview', 'vote_average', titleField, originalField, dateField];
+      return d.keys().hasAll(fields) && d.keys().hasOnly(fields)
+        && d.id is int && d.id > 0 && d.id <= 9007199254740991 && string(d.id) == id
+        && d[titleField] is string && d[titleField].size() > 0 && d[titleField].size() <= 500
+        && d[originalField] is string && d[originalField].size() <= 500
+        && d[dateField] is string && (d[dateField] == '' || d[dateField].matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && d.poster_path is string && d.poster_path.size() <= 200
+        && (d.poster_path == '' || d.poster_path.matches('^/[a-zA-Z0-9._-]+$'))
+        && d.overview is string && d.overview.size() <= 5000
+        && d.vote_average is number && d.vote_average >= 0 && d.vote_average <= 10;
+    }
+    match /users/{uid}/likedMovies/{id} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid) && validFavorite(id, 'title', 'original_title', 'release_date');
+    }
+    match /users/{uid}/likedShows/{id} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid) && validFavorite(id, 'name', 'original_name', 'first_air_date');
+    }
+    // All other paths are denied implicitly, including user-profile writes.
+  }
+}
