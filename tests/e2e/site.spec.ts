@@ -63,6 +63,30 @@ test("URL catalog controls and invalid filters", async ({ page }) => {
     page.getByRole("heading", { name: "Those filters aren’t valid" }),
   ).toBeVisible();
 });
+test("numbered pagination keeps filters and bad collection pages recover", async ({
+  page,
+}) => {
+  await page.goto("/movies?genre=18&page=6");
+  const pages = page.getByRole("navigation", { name: "Pagination" });
+  await expect(pages.getByRole("link", { name: "Page 6" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await pages.getByRole("link", { name: "Next page" }).click();
+  await expect(page).toHaveURL(/[?&]page=7/);
+  await expect(page).toHaveURL(/[?&]genre=18/);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.goto("/collections/after-dark?page=abc");
+  await expect(page).toHaveURL(/\/collections\/after-dark$/);
+  await expect(page).toHaveTitle(/^After dark/);
+  await expect(
+    page.getByRole("navigation", { name: "Collection pages" }),
+  ).toBeVisible();
+});
 test("unified search supports short titles, empty results, errors and back navigation", async ({
   page,
 }) => {

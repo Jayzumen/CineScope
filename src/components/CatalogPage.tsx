@@ -3,6 +3,8 @@ import { catalog } from "@/lib/catalog";
 import { ValidationError } from "@/lib/catalogValidation";
 import { genres, tvGenres } from "@/lib/catalogTypes";
 import TitleGrid from "./TitleGrid";
+import Pagination from "./Pagination";
+import { pageCount } from "@/lib/pagination";
 export default async function CatalogPage({
   kind,
   values,
@@ -128,7 +130,7 @@ export default async function CatalogPage({
           {p.query ? `results for “${p.query}”` : "titles to explore"}
         </span>
         <span>
-          Page {p.page} of {Math.max(1, Math.min(result.total_pages, 500))}
+          Page {p.page} of {pageCount(result.total_pages)}
         </span>
       </div>
       {result.results.length ? (
@@ -142,18 +144,11 @@ export default async function CatalogPage({
           </Link>
         </div>
       )}
-      <nav className="pagination" aria-label="Pagination">
-        {p.page > 1 && (
-          <Link className="button subtle" href={pageHref(p.page - 1)}>
-            Previous
-          </Link>
-        )}
-        {p.page < Math.min(500, result.total_pages) && (
-          <Link className="button subtle" href={pageHref(p.page + 1)}>
-            Next page
-          </Link>
-        )}
-      </nav>
+      <Pagination
+        page={p.page}
+        totalPages={result.total_pages}
+        href={pageHref}
+      />
     </div>
   );
 }
