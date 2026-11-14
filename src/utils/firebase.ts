@@ -1,6 +1,6 @@
 import { getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import {
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
@@ -8,6 +8,11 @@ import {
 let services:
   | { auth: ReturnType<typeof getAuth>; db: ReturnType<typeof getFirestore> }
   | undefined;
+declare global {
+  interface Window {
+    __cinescopeFirebaseEmulators?: boolean;
+  }
+}
 export function getFirebase() {
   if (services) return services;
   if (typeof window === "undefined") return null;
@@ -29,6 +34,19 @@ export function getFirebase() {
       provider: new ReCaptchaEnterpriseProvider(siteKey),
       isTokenAutoRefreshEnabled: true,
     });
-  services = { auth: getAuth(app), db: getFirestore(app) };
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.NEXT_PUBLIC_FIREBASE_EMULATORS === "1" &&
+    !window.__cinescopeFirebaseEmulators
+  ) {
+    connectAuthEmulator(auth, "http://127.0.0.1:9099", {
+      disableWarnings: true,
+    });
+    connectFirestoreEmulator(db, "127.0.0.1", 8085);
+    window.__cinescopeFirebaseEmulators = true;
+  }
+  services = { auth, db };
   return services;
 }

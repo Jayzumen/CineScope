@@ -169,9 +169,9 @@ export default function AccountDetails() {
         </p>
       ) : items.length ? (
         <div className="poster-grid five">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <div key={keyOf(item)}>
-              <TitleCard item={item} save={false} />
+              <TitleCard item={item} save={false} eager={index === 0} />
               <div className="small-actions">
                 <label>
                   <input

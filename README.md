@@ -25,9 +25,10 @@ pnpm build
 pnpm test:rules  # Java 21+, local Firestore emulator, demo project only
 pnpm test:redis  # redis-server and redis-cli on PATH (or REDIS_SERVER_BIN/REDIS_CLI_BIN)
 pnpm test:e2e    # Chromium installed with pnpm exec playwright install chromium
+pnpm test:e2e:auth # Java 21+, Auth/Firestore emulators and Chromium
 ```
 
-Browser integration tests include automated accessibility scans. They need a valid TMDB_API_KEY, live TMDB connectivity and no Firebase configuration. Set E2E_BASE_URL to test an already running local server. CI always runs static, unit, rules, Redis and build checks; live browser checks run when the repository has the TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
+Browser integration tests include automated accessibility scans. They need a valid TMDB_API_KEY and live TMDB connectivity. The standard suite intentionally runs without Firebase configuration; the separate authenticated suite creates two disposable users in loopback-only Firebase Auth/Firestore emulators and verifies that library data does not cross accounts. Set E2E_BASE_URL to test an already running local server with the standard suite. CI always runs static, unit, rules, Redis and build checks; live browser and authenticated-emulator checks run when the repository has the TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
 
 ## Deployment and design
 

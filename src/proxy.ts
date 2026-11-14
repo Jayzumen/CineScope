@@ -14,7 +14,9 @@ export function proxy(request: NextRequest) {
     "img-src 'self' data: https://image.tmdb.org https://*.googleusercontent.com",
     "font-src 'self'",
     "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://challenges.cloudflare.com https://www.google.com https://www.gstatic.com " +
-      (dev ? "ws:" : ""),
+      (dev
+        ? "ws: http://127.0.0.1:8085 http://127.0.0.1:9099 ws://127.0.0.1:8085 ws://127.0.0.1:9099"
+        : ""),
     `frame-src https://www.youtube-nocookie.com https://challenges.cloudflare.com https://www.google.com https://recaptcha.google.com ${authOrigin}`,
     "object-src 'none'",
     "base-uri 'self'",
