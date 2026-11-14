@@ -102,7 +102,7 @@ h3 {
   line-height: 1.15;
 }
 main {
-  min-height: 65vh;
+  min-height: calc(100svh - 80px);
 }
 main:focus {
   outline: none;
@@ -928,6 +928,9 @@ main:focus {
   }
 }
 @media (max-width: 760px) {
+  main {
+    min-height: calc(100svh - 68px);
+  }
   .shell {
     width: calc(100% - 36px);
   }

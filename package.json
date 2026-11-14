@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:auth": "node scripts/auth-e2e-runner.mjs",
+    "test:performance": "playwright test --config playwright.performance.config.ts",
     "test:redis": "node --experimental-strip-types --test tests/integration/redis.test.mjs",
     "check:deployment": "node scripts/check-deployment.mjs"
   },
