@@ -6,16 +6,19 @@ import {
   REGION_COOKIE,
   regionName,
 } from "@/lib/region";
+import Image from "next/image";
 import Link from "next/link";
 import { Star, ArrowLeft } from "lucide-react";
 import { detail } from "@/lib/catalog";
 import { titleOf, type MediaItem, type MediaResults } from "@/lib/catalogTypes";
-import { artworkUrl, type TrailerVideo } from "@/lib/media";
+import { artworkPlaceholder, artworkUrl, type TrailerVideo } from "@/lib/media";
 import Artwork from "./Artwork";
 import TitleGrid from "./TitleGrid";
 import TrailerButton from "./TrailerButton";
 import LibraryActions from "./LibraryActions";
 import LikeButton from "./LikeButton";
+import { formatRuntime, languageName, plural } from "@/lib/format";
+import { jsonLd, titleStructuredData } from "@/lib/structuredData";
 type Person = {
   id: number;
   name: string;
@@ -23,7 +26,11 @@ type Person = {
   character?: string;
   job?: string;
 };
-type Provider = { provider_id: number; provider_name: string };
+type Provider = {
+  provider_id: number;
+  provider_name: string;
+  logo_path?: string | null;
+};
 export type DetailData = MediaItem & {
   tagline?: string;
   genres: { id: number; name: string }[];
@@ -122,6 +129,14 @@ export default async function DetailPage({
         ["Director", "Creator", "Screenplay"].includes(x.job ?? ""),
       )
       .slice(0, 6) ?? [];
+  const path = `${base}/${id}`;
+  const poster = artworkUrl(item.poster_path);
+  const structuredData = titleStructuredData(item, kind, {
+    name: title,
+    url: `${(process.env.SITE_URL || "http://localhost:3000").replace(/\/$/, "")}${path}`,
+    image: poster === artworkPlaceholder ? undefined : poster,
+  });
+  const runtime = formatRuntime(item.runtime ?? item.episode_run_time?.[0]);
   const availabilityLink = providers?.link?.startsWith(
     "https://www.themoviedb.org/",
   )
@@ -129,6 +144,10 @@ export default async function DetailPage({
     : undefined;
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
+      />
       <section className="hero detail-hero">
         <div className="hero-image">
           <Artwork
@@ -152,15 +171,20 @@ export default async function DetailPage({
                 {item.vote_average?.toFixed(1) ?? "—"}{" "}
                 <span className="muted font-normal">/ 10</span>
               </span>
-              <span>
-                {(item.release_date || item.first_air_date)?.slice(0, 4)}
-              </span>
-              {item.runtime ? (
-                <span>{item.runtime} min</span>
-              ) : item.number_of_seasons ? (
-                <span>{item.number_of_seasons} seasons</span>
-              ) : null}
-              <span>{item.vote_count?.toLocaleString()} votes</span>
+              {(item.release_date || item.first_air_date) && (
+                <span>
+                  {(item.release_date || item.first_air_date)?.slice(0, 4)}
+                </span>
+              )}
+              {kind === "tv" && !!item.number_of_seasons && (
+                <span>{plural(item.number_of_seasons, "season")}</span>
+              )}
+              {runtime && (
+                <span>{kind === "tv" ? `${runtime} episodes` : runtime}</span>
+              )}
+              {!!item.vote_count && (
+                <span>{plural(item.vote_count, "vote")}</span>
+              )}
             </div>
             <div className="tags">
               {item.genres.map((g) => (
@@ -238,7 +262,7 @@ export default async function DetailPage({
             )}
             <section className="section">
               <h2 className="section-title">Where to watch</h2>
-              <form className="filter-bar" action={`${base}/${id}`}>
+              <form className="filter-bar" action={path}>
                 <label className="field">
                   Your region
                   <select name="region" defaultValue={country}>
@@ -262,6 +286,15 @@ export default async function DetailPage({
                     <div className="provider-row">
                       {(list as Provider[]).map((p) => (
                         <span className="provider" key={p.provider_id}>
+                          {artworkUrl(p.logo_path, "w92") !==
+                            artworkPlaceholder && (
+                            <Image
+                              src={artworkUrl(p.logo_path, "w92")}
+                              alt=""
+                              width={24}
+                              height={24}
+                            />
+                          )}
                           {p.provider_name}
                         </span>
                       ))}
@@ -300,7 +333,7 @@ export default async function DetailPage({
               <dt>Status</dt>
               <dd>{item.status || "Unknown"}</dd>
               <dt>Original language</dt>
-              <dd>{item.original_language?.toUpperCase() || "Unknown"}</dd>
+              <dd>{languageName(item.original_language) || "Unknown"}</dd>
               {crew.map((p, i) => (
                 <div key={`${p.id}-${i}`}>
                   <dt>{p.job}</dt>

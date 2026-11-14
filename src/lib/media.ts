@@ -1,7 +1,7 @@
 export const artworkPlaceholder = "/artwork-placeholder.svg";
 export function artworkUrl(
   path: string | null | undefined,
-  size: "w500" | "w1280" = "w500",
+  size: "w92" | "w500" | "w1280" = "w500",
   fallback?: string | null,
 ): string {
   const valid = (value: unknown): value is string =>

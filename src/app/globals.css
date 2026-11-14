@@ -652,7 +652,7 @@ main:focus {
   color: var(--muted);
   margin-top: 20px;
 }
-.facts dt:first-child {
+.facts > dt:first-child {
   margin-top: 0;
 }
 .facts dd {
@@ -681,11 +681,17 @@ main:focus {
   margin: 16px 0;
 }
 .provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 9px 12px;
+  padding: 7px 12px 7px 7px;
   font-size: 13px;
+}
+.provider img {
+  border-radius: 6px;
 }
 .season {
   border-bottom: 1px solid var(--border);
