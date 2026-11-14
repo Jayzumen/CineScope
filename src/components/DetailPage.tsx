@@ -1,8 +1,16 @@
+import { cache } from "react";
+import { cookies, headers } from "next/headers";
+import {
+  isRegionCode,
+  pickRegion,
+  REGION_COOKIE,
+  regionName,
+} from "@/lib/region";
 import Link from "next/link";
 import { Star, ArrowLeft } from "lucide-react";
-import { detail, limitBrowse } from "@/lib/catalog";
+import { detail } from "@/lib/catalog";
 import { titleOf, type MediaItem, type MediaResults } from "@/lib/catalogTypes";
-import { artworkUrl } from "@/lib/media";
+import { artworkUrl, type TrailerVideo } from "@/lib/media";
 import Artwork from "./Artwork";
 import TitleGrid from "./TitleGrid";
 import TrailerButton from "./TrailerButton";
@@ -24,7 +32,7 @@ export type DetailData = MediaItem & {
   status?: string;
   original_language?: string;
   number_of_seasons?: number;
-  videos: { results: Video[] };
+  videos: { results: TrailerVideo[] };
   credits: { cast: Person[]; crew: Person[] };
   recommendations: MediaResults;
   seasons?: {
@@ -46,8 +54,16 @@ export type DetailData = MediaItem & {
     >;
   };
 };
+// Metadata and page share one request-scoped load and one upstream cache key.
+const loadDetail = cache((kind: "movie" | "tv", id: string) =>
+  detail<DetailData>(
+    kind,
+    id,
+    "videos,credits,recommendations,watch/providers",
+  ),
+);
 export async function detailMetadata(kind: "movie" | "tv", id: string) {
-  const item = await detail<DetailData>(kind, id, "videos");
+  const item = await loadDetail(kind, id);
   const title = titleOf(item);
   const path = `/${kind === "movie" ? "movies" : "shows"}/${id}`;
   return {
@@ -73,29 +89,31 @@ export async function detailMetadata(kind: "movie" | "tv", id: string) {
 export default async function DetailPage({
   kind,
   id,
-  region = "US",
+  region,
 }: {
   kind: "movie" | "tv";
   id: string;
   region?: string;
 }) {
-  await limitBrowse();
-  const item = await detail<DetailData>(
-    kind,
-    id,
-    "videos,credits,recommendations,watch/providers",
-  );
+  const item = await loadDetail(kind, id);
   const title = titleOf(item);
+  const requestHeaders = await headers();
+  const country = pickRegion({
+    query: region,
+    cookie: (await cookies()).get(REGION_COOKIE)?.value,
+    geo: requestHeaders.get(process.env.GEO_COUNTRY_HEADER || "x-country"),
+    acceptLanguage: requestHeaders.get("accept-language"),
+  });
+  // Offer every region TMDB lists for this title, plus the current one.
   const regions = [
-    ["US", "United States"],
-    ["DE", "Germany"],
-    ["GB", "United Kingdom"],
-    ["CA", "Canada"],
-    ["AU", "Australia"],
-    ["FR", "France"],
-    ["JP", "Japan"],
-  ];
-  const country = regions.some(([code]) => code === region) ? region : "US";
+    ...new Set([
+      country,
+      ...Object.keys(item["watch/providers"]?.results ?? {}),
+    ]),
+  ]
+    .filter(isRegionCode)
+    .map((code) => [code, regionName(code)] as const)
+    .sort((a, b) => a[1].localeCompare(b[1]));
   const providers = item["watch/providers"]?.results[country];
   const base = kind === "movie" ? "/movies" : "/shows";
   const crew =
@@ -158,11 +176,7 @@ export default async function DetailPage({
             <div className="hero-actions">
               <TrailerButton videos={item.videos} title={title} />
               <LibraryActions item={item} kind={kind} />
-              <LikeButton
-                item={item}
-                collectionName={kind === "movie" ? "likedMovies" : "likedShows"}
-                itemName={title}
-              />
+              <LikeButton item={item} kind={kind} itemName={title} lookup />
             </div>
           </div>
         </div>
@@ -259,8 +273,8 @@ export default async function DetailPage({
                 !providers?.rent?.length &&
                 !providers?.buy?.length && (
                   <p className="muted my-5 text-sm">
-                    No availability is listed for this region. This does not
-                    necessarily mean the title is unavailable.
+                    No availability is listed for {regionName(country)}. This
+                    does not necessarily mean the title is unavailable.
                   </p>
                 )}
               {availabilityLink && (

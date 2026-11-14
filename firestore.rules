@@ -4,41 +4,40 @@ service cloud.firestore {
     function owner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
-    function validFavorite(id, titleField, originalField, dateField) {
-      let d = request.resource.data;
-      let fields = ['id', 'poster_path', 'overview', 'vote_average', titleField, originalField, dateField];
-      return d.keys().hasAll(fields) && d.keys().hasOnly(fields)
-        && d.id is int && d.id > 0 && d.id <= 9007199254740991 && string(d.id) == id
-        && d[titleField] is string && d[titleField].size() > 0 && d[titleField].size() <= 500
-        && d[originalField] is string && d[originalField].size() <= 500
-        && d[dateField] is string && (d[dateField] == '' || d[dateField].matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
-        && d.poster_path is string && d.poster_path.size() <= 200
-        && (d.poster_path == '' || d.poster_path.matches('^/[a-zA-Z0-9._-]+$'))
-        && d.overview is string && d.overview.size() <= 5000
-        && d.vote_average is number && d.vote_average >= 0 && d.vote_average <= 10;
-    }
+    // Legacy favorites. The app migrates these into the library as favorites,
+    // so they may only be read and deleted; no new writes are accepted.
     match /users/{uid}/likedMovies/{id} {
       allow read, delete: if owner(uid);
-      allow create, update: if owner(uid) && validFavorite(id, 'title', 'original_title', 'release_date');
     }
     match /users/{uid}/likedShows/{id} {
       allow read, delete: if owner(uid);
-      allow create, update: if owner(uid) && validFavorite(id, 'name', 'original_name', 'first_air_date');
+    }
+    function validLibrary(id) {
+      let d = request.resource.data;
+      let fields = ['id','kind','title','poster_path','year','status','rating','favorite','addedAt','updatedAt'];
+      return d.keys().hasAll(fields) && d.keys().hasOnly(fields)
+        && d.id is int && d.id > 0 && d.id <= 9999999999
+        && d.kind in ['movie','tv']
+        && id == d.kind + '-' + string(d.id)
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 500
+        && d.poster_path is string && d.poster_path.size() <= 200
+        && (d.poster_path == '' || d.poster_path.matches('^/[a-zA-Z0-9._-]+$'))
+        && d.year is string && (d.year == '' || d.year.matches('^[0-9]{4}$'))
+        && d.status in ['','watchlist','watched']
+        && d.favorite is bool
+        // A document must hold something: a list status or a favorite.
+        && (d.status != '' || d.favorite == true)
+        && d.rating is int && d.rating >= 0 && d.rating <= 10
+        && d.updatedAt == request.time;
     }
     match /users/{uid}/library/{id} {
       allow read, delete: if owner(uid);
-      allow create, update: if owner(uid)
-        && request.resource.data.keys().hasAll(['id','kind','title','poster_path','year','status','rating'])
-        && request.resource.data.keys().hasOnly(['id','kind','title','poster_path','year','status','rating'])
-        && request.resource.data.id is int && request.resource.data.id > 0 && request.resource.data.id <= 9999999999
-        && request.resource.data.kind in ['movie','tv']
-        && id == request.resource.data.kind + '-' + string(request.resource.data.id)
-        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 500
-        && request.resource.data.poster_path is string && request.resource.data.poster_path.size() <= 200
-        && (request.resource.data.poster_path == '' || request.resource.data.poster_path.matches('^/[a-zA-Z0-9._-]+$'))
-        && request.resource.data.year is string && (request.resource.data.year == '' || request.resource.data.year.matches('^[0-9]{4}$'))
-        && request.resource.data.status in ['watchlist','watched']
-        && request.resource.data.rating is int && request.resource.data.rating >= 0 && request.resource.data.rating <= 10;
+      allow create: if owner(uid) && validLibrary(id)
+        && request.resource.data.addedAt == request.time;
+      // addedAt never changes. Documents from before timestamps existed get
+      // their addedAt set to the time of their first update.
+      allow update: if owner(uid) && validLibrary(id)
+        && request.resource.data.addedAt == resource.data.get('addedAt', request.time);
     }
     // All other paths are denied implicitly, including user-profile writes.
   }

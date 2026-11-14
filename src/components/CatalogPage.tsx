@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { catalog } from "@/lib/catalog";
+import { ValidationError } from "@/lib/catalogValidation";
 import { genres, tvGenres } from "@/lib/catalogTypes";
 import TitleGrid from "./TitleGrid";
 export default async function CatalogPage({
@@ -13,10 +14,7 @@ export default async function CatalogPage({
   try {
     data = await catalog(kind, values);
   } catch (error) {
-    if (
-      error instanceof Error &&
-      /^Invalid|Search is limited/.test(error.message)
-    )
+    if (error instanceof ValidationError)
       return (
         <div className="shell section">
           <div className="empty-state">

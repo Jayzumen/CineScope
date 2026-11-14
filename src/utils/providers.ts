@@ -6,8 +6,5 @@ googleProvider.setCustomParameters({
 });
 
 const githubProvider = new GithubAuthProvider();
-githubProvider.setCustomParameters({
-  prompt: "consent",
-});
 
 export { googleProvider, githubProvider };

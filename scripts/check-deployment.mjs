@@ -2,7 +2,7 @@
 // Only variable names and validation errors are printed; never values or credentials.
 const required = [
   "SITE_URL",
-  "TMDB_API_KEY",
+  "TMDB_READ_ACCESS_TOKEN",
   "UPSTASH_REDIS_REST_URL",
   "UPSTASH_REDIS_REST_TOKEN",
   "RATE_LIMIT_NAMESPACE",
@@ -20,6 +20,10 @@ const errors = required
   .filter((key) => !process.env[key]?.trim())
   .map(
     (key) => `${key} is required for the complete production configuration.`,
+  );
+if (process.env.TMDB_API_KEY?.trim())
+  console.warn(
+    "Warning: TMDB_API_KEY is set. It is ignored while TMDB_READ_ACCESS_TOKEN is set; remove it so the key cannot leak through URLs.",
   );
 for (const key of ["SITE_URL", "UPSTASH_REDIS_REST_URL"]) {
   if (!process.env[key]) continue;

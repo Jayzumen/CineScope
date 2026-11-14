@@ -30,9 +30,29 @@ test("signed-in library data is private when users switch", async ({
     page.locator('.hero-actions button[aria-pressed="true"]'),
   ).toHaveText(/Saved/);
 
+  const heart = page
+    .locator(".poster-card")
+    .first()
+    .getByRole("button", { name: /^Save .+ to favorites$/ });
+  const favoriteTitle = (
+    await page.locator(".poster-card h3").first().textContent()
+  )?.trim();
+  await expect(heart).toBeEnabled();
+  await heart.click();
+  await expect(
+    page
+      .locator(".poster-card")
+      .first()
+      .getByRole("button", { name: /^Remove .+ from favorites$/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+
   await page.goto("/account");
   await expect(
     page.getByRole("heading", { name: featuredTitle!, exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Favorites", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: favoriteTitle!, exact: true }),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();

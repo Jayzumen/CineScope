@@ -56,7 +56,7 @@ export default function TitleCard({
         <div className="poster-save">
           <LikeButton
             item={item}
-            collectionName={type === "tv" ? "likedShows" : "likedMovies"}
+            kind={type === "tv" ? "tv" : "movie"}
             itemName={title}
           />
         </div>

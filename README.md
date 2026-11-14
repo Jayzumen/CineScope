@@ -9,7 +9,7 @@ Use Node 24 and pnpm 10.12.4:
 ```sh
 pnpm install --frozen-lockfile
 cp .env.example .env.local
-# Set TMDB_API_KEY; Firebase is optional for browsing, required for accounts.
+# Set TMDB_READ_ACCESS_TOKEN (or the legacy TMDB_API_KEY); Firebase is optional for browsing, required for accounts.
 pnpm dev
 ```
 
@@ -29,7 +29,7 @@ pnpm test:e2e:auth # Java 21+, Auth/Firestore emulators and Chromium
 PERFORMANCE_BASE_URL=https://your-site.example pnpm test:performance
 ```
 
-Browser integration tests include automated accessibility scans. They need a valid TMDB_API_KEY and live TMDB connectivity. The standard suite intentionally runs without Firebase configuration; the separate authenticated suite creates two disposable users in loopback-only Firebase Auth/Firestore emulators and verifies that library data does not cross accounts. Set E2E_BASE_URL to test an already running local server with the standard suite. CI always runs static, unit, rules, Redis and build checks; live browser and authenticated-emulator checks run when the repository has the TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
+Browser integration tests include automated accessibility scans. They need a valid TMDB_READ_ACCESS_TOKEN (or TMDB_API_KEY) and live TMDB connectivity. The standard suite intentionally runs without Firebase configuration; the separate authenticated suite creates two disposable users in loopback-only Firebase Auth/Firestore emulators and verifies that library data does not cross accounts. Set E2E_BASE_URL to test an already running local server with the standard suite. CI always runs static, unit, rules, Redis and build checks; live browser and authenticated-emulator checks run when the repository has the TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY Actions secret. No Firebase production credentials are used by tests.
 
 The performance suite targets an already deployed HTTPS URL and checks home/catalog on desktop and mobile against LCP, interaction latency, CLS, transfer-size and resource-count budgets. Set the GitHub Actions repository variable `PRODUCTION_URL` to enable that gate in CI. Lab checks catch regressions but do not replace 75th-percentile field data from real users; development-server timings are not a launch baseline. Budgets can be overridden with the documented `PERFORMANCE_*` environment variables in the test file.
 

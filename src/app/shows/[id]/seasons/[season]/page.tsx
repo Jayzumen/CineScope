@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { mediaId } from "@/lib/catalogValidation";
 import { tmdbFetch, TmdbError } from "@/lib/tmdb";
-import { limitBrowse } from "@/lib/catalog";
 export const metadata = { title: "Season episodes" };
 export default async function Page({
   params,
@@ -16,7 +15,6 @@ export default async function Page({
   } catch {
     notFound();
   }
-  await limitBrowse();
   let data;
   try {
     data = await tmdbFetch<{

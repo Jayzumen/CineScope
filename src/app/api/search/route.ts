@@ -119,9 +119,22 @@ export async function POST(request: Request) {
       ]);
     }
     const results = await tmdbFetch<MediaResults>(
-      `/search/multi?query=${encodeURIComponent(body.query)}&page=${body.page}&language=en-US&include_adult=false`,
+      `/search/${body.type}?query=${encodeURIComponent(body.query)}&page=${body.page}&language=en-US&include_adult=false`,
+      // This route already applies its own per-IP, per-user and challenge limits.
+      { browseLimit: false },
     );
-    return reply(results);
+    // Typed endpoints omit media_type; add it so cards link correctly.
+    return reply(
+      body.type === "multi"
+        ? results
+        : {
+            ...results,
+            results: results.results.map((item) => ({
+              ...item,
+              media_type: body.type,
+            })),
+          },
+    );
   } catch (error) {
     if (error instanceof RequestLimitError)
       return reply({ error: error.message }, 429, {

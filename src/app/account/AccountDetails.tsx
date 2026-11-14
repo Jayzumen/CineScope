@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { doc, deleteDoc } from "firebase/firestore";
 import { toast } from "sonner";
 import { Share2, Trash2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
@@ -9,13 +8,26 @@ import { useLibrary } from "@/components/LibraryProvider";
 import TitleCard from "@/components/TitleCard";
 import LibraryActions from "@/components/LibraryActions";
 import { titleOf, type MediaItem } from "@/lib/catalogTypes";
+import { addedMillis, type LibraryEntry } from "@/lib/library";
+import { updateLibrary } from "@/lib/libraryStore";
+import DeleteAccount from "./DeleteAccount";
+type Tab = "watchlist" | "watched" | "favorites";
+const toItem = (e: LibraryEntry): MediaItem => ({
+  id: e.id,
+  media_type: e.kind,
+  title: e.title,
+  poster_path: e.poster_path,
+  release_date: e.year,
+  vote_average: 0,
+});
 export default function AccountDetails() {
   const { user, services, loading, error } = useAuth();
   const library = useLibrary();
-  const [tab, setTab] = useState("watchlist");
+  const [tab, setTab] = useState<Tab>("watchlist");
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState("title");
+  const [sort, setSort] = useState("added");
   const [selected, setSelected] = useState<string[]>([]);
+  const [listName, setListName] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   if (loading)
     return (
@@ -42,28 +54,19 @@ export default function AccountDetails() {
         </div>
       </div>
     );
-  const source: MediaItem[] =
-    tab === "favorites"
-      ? library.favorites
-      : library.entries
-          .filter((e) => e.status === tab)
-          .map((e) => ({
-            id: e.id,
-            media_type: e.kind,
-            title: e.title,
-            poster_path: e.poster_path,
-            release_date: e.year,
-            vote_average: 0,
-          }));
-  const items = source
-    .filter((x) => titleOf(x).toLowerCase().includes(query.toLowerCase()))
+  const entries = library.entries.filter((e) =>
+    tab === "favorites" ? e.favorite === true : e.status === tab,
+  );
+  const items = entries
+    .filter((e) => e.title.toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) =>
-      sort === "year"
-        ? (b.release_date || b.first_air_date || "").localeCompare(
-            a.release_date || a.first_air_date || "",
-          )
-        : titleOf(a).localeCompare(titleOf(b)),
-    );
+      sort === "added"
+        ? addedMillis(b) - addedMillis(a)
+        : sort === "year"
+          ? b.year.localeCompare(a.year)
+          : a.title.localeCompare(b.title),
+    )
+    .map(toItem);
   const keyOf = (item: MediaItem) =>
     `${item.media_type === "tv" ? "tv" : "movie"}-${item.id}`;
   async function remove(item: MediaItem) {
@@ -71,18 +74,13 @@ export default function AccountDetails() {
     const key = keyOf(item);
     setPending(key);
     try {
-      await deleteDoc(
-        doc(
-          services.db,
-          "users",
-          user.uid,
-          tab === "favorites"
-            ? item.media_type === "tv"
-              ? "likedShows"
-              : "likedMovies"
-            : "library",
-          tab === "favorites" ? String(item.id) : key,
-        ),
+      // Removing from one tab keeps the title's other state (e.g. favorite).
+      await updateLibrary(
+        services.db,
+        user.uid,
+        item,
+        item.media_type === "tv" ? "tv" : "movie",
+        tab === "favorites" ? { favorite: false } : { status: "" },
       );
       toast.success("Removed from this collection");
       setSelected((s) => s.filter((x) => x !== key));
@@ -95,7 +93,11 @@ export default function AccountDetails() {
   async function share() {
     const url = new URL("/list", window.location.origin);
     url.searchParams.set("titles", selected.join(","));
-    url.searchParams.set("name", "A few stories worth sharing");
+    url.searchParams.set(
+      "name",
+      listName.replace(/\s+/g, " ").trim().slice(0, 80) ||
+        "A few stories worth sharing",
+    );
     try {
       await navigator.clipboard.writeText(url.toString());
       toast.success(
@@ -117,7 +119,7 @@ export default function AccountDetails() {
         <p>For later. For the memories. For the stories you love.</p>
       </div>
       <div className="tab-row" aria-label="Library collection">
-        {["watchlist", "watched", "favorites"].map((t) => (
+        {(["watchlist", "watched", "favorites"] as const).map((t) => (
           <button
             key={t}
             aria-pressed={tab === t}
@@ -144,9 +146,18 @@ export default function AccountDetails() {
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
+          <option value="added">Recently added</option>
           <option value="title">Title A–Z</option>
-          <option value="year">Newest first</option>
+          <option value="year">Release year, newest</option>
         </select>
+        <input
+          className="input"
+          aria-label="Name for the shared list"
+          placeholder="Name your shared list (optional)"
+          maxLength={80}
+          value={listName}
+          onChange={(e) => setListName(e.target.value)}
+        />
         <button
           className="button subtle"
           disabled={!selected.length}
@@ -159,7 +170,7 @@ export default function AccountDetails() {
       <p className="filter-note mb-6">
         Your library is private. Sharing creates a link to only the titles you
         select, without your account details, viewing status, or ratings. Up to
-        200 items per collection are shown.
+        500 titles are shown.
       </p>
       {library.loading ? (
         <p role="status">Loading your collection…</p>
@@ -200,12 +211,10 @@ export default function AccountDetails() {
                   <Trash2 size={16} />
                 </button>
               </div>
-              {tab !== "favorites" && (
-                <LibraryActions
-                  item={item}
-                  kind={item.media_type === "tv" ? "tv" : "movie"}
-                />
-              )}
+              <LibraryActions
+                item={item}
+                kind={item.media_type === "tv" ? "tv" : "movie"}
+              />
             </div>
           ))}
         </div>
@@ -226,6 +235,7 @@ export default function AccountDetails() {
           </Link>
         </div>
       )}
+      {services && <DeleteAccount user={user} db={services.db} />}
     </div>
   );
 }

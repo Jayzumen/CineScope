@@ -43,13 +43,20 @@ test("search request parsing rejects unknown keys and oversized streams", async 
   assert.deepEqual(await readSearchBody(request({ query: " Up " })), {
     query: "Up",
     page: 1,
+    type: "multi",
     token: undefined,
   });
+  assert.equal(
+    (await readSearchBody(request({ query: "Up", type: "person" }))).type,
+    "person",
+  );
   for (const body of [
     { query: "" },
     { query: [] },
     { query: "Up", admin: true },
     { query: "Up", page: -1 },
+    { query: "Up", type: "collection" },
+    { query: "Up", type: ["movie"] },
     { query: "Up", token: "x".repeat(5000) },
   ])
     await assert.rejects(readSearchBody(request(body)));

@@ -1,29 +1,8 @@
 import "server-only";
-import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { tmdbFetch, TmdbError } from "./tmdb";
-import { enforceRateLimit } from "./rateLimit";
-import { clientKey, positiveInteger } from "./requestProtection";
-import { catalogParams, mediaId } from "./catalogValidation";
+import { catalogParams, mediaId, ValidationError } from "./catalogValidation";
 import type { MediaResults } from "./catalogTypes";
-export async function limitBrowse() {
-  const key = clientKey(await headers(), process.env.TRUSTED_CLIENT_IP_HEADER);
-  await enforceRateLimit([
-    {
-      key: `browse:${key}:minute`,
-      maxRequests: positiveInteger(
-        process.env.BROWSE_RATE_LIMIT_PER_MINUTE,
-        60,
-      ),
-      windowMs: 60_000,
-    },
-    {
-      key: `browse:${key}:hour`,
-      maxRequests: positiveInteger(process.env.BROWSE_RATE_LIMIT_PER_HOUR, 600),
-      windowMs: 3_600_000,
-    },
-  ]);
-}
 export async function catalog(
   kind: "movie" | "tv",
   values: Record<string, string | string[] | undefined>,
@@ -32,7 +11,6 @@ export async function catalog(
   // All text search must pass through the challenge-protected API.
   if (p.query)
     redirect(`/search?q=${encodeURIComponent(p.query)}&page=${p.page}`);
-  await limitBrowse();
   const params = new URLSearchParams({
     language: "en-US",
     page: String(p.page),
@@ -57,17 +35,18 @@ export async function catalog(
 export async function detail<T>(
   kind: "movie" | "tv" | "person",
   raw: string,
-  append: string,
+  append = "",
 ): Promise<T> {
   let id;
   try {
     id = mediaId(raw);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ValidationError) notFound();
+    throw error;
   }
   try {
     return await tmdbFetch<T>(
-      `/${kind}/${id}?language=en-US&append_to_response=${append}`,
+      `/${kind}/${id}?language=en-US${append ? `&append_to_response=${append}` : ""}`,
     );
   } catch (error) {
     if (error instanceof TmdbError && error.status === 404) notFound();

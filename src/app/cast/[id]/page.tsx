@@ -1,10 +1,20 @@
 import Link from "next/link";
-import { detail, limitBrowse } from "@/lib/catalog";
+import { detail } from "@/lib/catalog";
 import { artworkUrl } from "@/lib/media";
 import { type MediaItem } from "@/lib/catalogTypes";
 import Artwork from "@/components/Artwork";
 import TitleGrid from "@/components/TitleGrid";
-type Person = Cast & { combined_credits: { cast: MediaItem[] } };
+type Person = {
+  id: number;
+  name: string;
+  biography?: string;
+  birthday?: string | null;
+  deathday?: string | null;
+  place_of_birth?: string | null;
+  profile_path?: string | null;
+  known_for_department?: string;
+  combined_credits: { cast: MediaItem[] };
+};
 export async function generateMetadata({
   params,
 }: {
@@ -26,7 +36,6 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await limitBrowse();
   const p = await detail<Person>(
     "person",
     (await params).id,

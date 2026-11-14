@@ -5,11 +5,13 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider,
+  sendEmailVerification,
   sendPasswordResetEmail,
 } from "firebase/auth";
+import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { googleProvider, githubProvider } from "@/utils/providers";
+import { authErrorMessage } from "@/lib/authErrors";
 export default function LoginForm({
   destination = "/account",
 }: {
@@ -35,29 +37,39 @@ export default function LoginForm({
       if (provider)
         await signInWithPopup(
           services.auth,
-          provider === "google"
-            ? new GoogleAuthProvider()
-            : new GithubAuthProvider(),
+          provider === "google" ? googleProvider : githubProvider,
         );
       else if (mode === "reset") {
         await sendPasswordResetEmail(services.auth, email.trim());
         setMessage(
           "If an account exists for this email, a reset link is on its way.",
         );
-      } else if (mode === "signup")
-        await createUserWithEmailAndPassword(
+      } else if (mode === "signup") {
+        const { user: created } = await createUserWithEmailAndPassword(
           services.auth,
           email.trim(),
           password,
         );
-      else
+        // A toast survives the redirect that follows a successful sign-up.
+        try {
+          await sendEmailVerification(created);
+          toast.success(
+            "Welcome! We sent a link to confirm your email address.",
+          );
+        } catch {
+          toast.message(
+            "Account created. Email confirmation could not be sent.",
+          );
+        }
+      } else
         await signInWithEmailAndPassword(services.auth, email.trim(), password);
-    } catch {
-      setError(
-        mode === "reset"
-          ? "Could not send a reset link. Please try again later."
-          : "Could not sign in. Check your details or try another sign-in method.",
-      );
+    } catch (failure) {
+      const text = authErrorMessage(failure, provider ? "login" : mode);
+      if (text) setError(text);
+      else if (mode === "reset" && !provider)
+        setMessage(
+          "If an account exists for this email, a reset link is on its way.",
+        );
     } finally {
       setPending(false);
     }

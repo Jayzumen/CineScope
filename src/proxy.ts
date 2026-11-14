@@ -42,6 +42,20 @@ export function proxy(request: NextRequest) {
   );
   if (!dev)
     response.headers.set("Strict-Transport-Security", "max-age=31536000");
+  // Remember an explicitly chosen watch region for later detail pages.
+  const region = request.nextUrl.searchParams.get("region")?.toUpperCase();
+  if (
+    region &&
+    /^[A-Z]{2}$/.test(region) &&
+    /^\/(movies|shows)\/\d+$/.test(request.nextUrl.pathname)
+  )
+    response.cookies.set("region", region, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+      httpOnly: true,
+      secure: !dev,
+    });
   return response;
 }
 export const config = {

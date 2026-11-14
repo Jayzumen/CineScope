@@ -13,8 +13,9 @@ import {
   collection,
   deleteDoc,
   updateDoc,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
-import { favoriteDocument } from "../../src/lib/favorites.ts";
 let env;
 before(async () => {
   if (process.env.FIRESTORE_EMULATOR_HOST !== "127.0.0.1:8085")
@@ -30,77 +31,51 @@ before(async () => {
 });
 beforeEach(async () => env.clearFirestore());
 after(async () => env?.cleanup());
-for (const kind of ["likedMovies", "likedShows"]) {
-  const data = favoriteDocument(
-    { id: 123, title: "Up", name: "Dark", vote_average: 8.1 },
-    kind,
+const fields = {
+  id: 123,
+  kind: "movie",
+  title: "Up",
+  poster_path: "/test.jpg",
+  year: "2009",
+  status: "watchlist",
+  rating: 0,
+  favorite: false,
+};
+const fresh = (patch = {}) => ({
+  ...fields,
+  addedAt: serverTimestamp(),
+  updatedAt: serverTimestamp(),
+  ...patch,
+});
+const seed = (path, data) =>
+  env.withSecurityRulesDisabled((ctx) =>
+    setDoc(doc(ctx.firestore(), path), data),
   );
-  test(`${kind}: owner can create, read, list, update, and delete`, async () => {
+for (const kind of ["likedMovies", "likedShows"]) {
+  const legacy = {
+    id: 123,
+    title: "Up",
+    name: "Dark",
+    poster_path: "",
+    overview: "",
+    vote_average: 8,
+  };
+  test(`${kind}: legacy favorites are owner read/delete only, for migration`, async () => {
+    await seed(`users/alice/${kind}/123`, legacy);
     const db = env.authenticatedContext("alice").firestore();
     const ref = doc(db, "users/alice", kind, "123");
-    await assertSucceeds(setDoc(ref, data));
     await assertSucceeds(getDoc(ref));
     await assertSucceeds(getDocs(collection(db, "users/alice", kind)));
-    await assertSucceeds(updateDoc(ref, { vote_average: 9 }));
-    await assertSucceeds(deleteDoc(ref));
-  });
-  test(`${kind}: unauthenticated and other users cannot access favorites`, async () => {
-    await env.withSecurityRulesDisabled((ctx) =>
-      setDoc(doc(ctx.firestore(), "users/alice", kind, "123"), data),
-    );
+    await assertFails(setDoc(doc(db, "users/alice", kind, "124"), legacy));
+    await assertFails(updateDoc(ref, { vote_average: 9 }));
     for (const ctx of [
       env.unauthenticatedContext(),
       env.authenticatedContext("bob"),
     ]) {
-      const db = ctx.firestore();
-      const ref = doc(db, "users/alice", kind, "123");
-      await assertFails(getDoc(ref));
-      await assertFails(getDocs(collection(db, "users/alice", kind)));
-      await assertFails(setDoc(ref, data));
-      await assertFails(updateDoc(ref, { vote_average: 9 }));
-      await assertFails(deleteDoc(ref));
+      const other = doc(ctx.firestore(), "users/alice", kind, "123");
+      await assertFails(getDoc(other));
+      await assertFails(deleteDoc(other));
     }
-  });
-  test(`${kind}: reject malformed, oversized, extra fields and mismatched IDs`, async () => {
-    const ref = doc(
-      env.authenticatedContext("alice").firestore(),
-      "users/alice",
-      kind,
-      "123",
-    );
-    for (const patch of [
-      { id: 124 },
-      { id: "123" },
-      { id: -1 },
-      { admin: true },
-      { overview: "x".repeat(5001) },
-      { poster_path: "https://evil.test/image" },
-      { vote_average: 11 },
-      { vote_average: -1 },
-      { vote_average: "8" },
-      { [kind === "likedMovies" ? "title" : "name"]: "" },
-      { [kind === "likedMovies" ? "release_date" : "first_air_date"]: "bad" },
-    ]) {
-      await assertFails(setDoc(ref, { ...data, ...patch }));
-    }
-    await assertFails(setDoc(ref, { id: 123 }));
-  });
-  test(`${kind}: legacy full documents remain readable and deletable`, async () => {
-    await env.withSecurityRulesDisabled((ctx) =>
-      setDoc(doc(ctx.firestore(), "users/alice", kind, "123"), {
-        ...data,
-        videos: { results: [] },
-      }),
-    );
-    const ref = doc(
-      env.authenticatedContext("alice").firestore(),
-      "users/alice",
-      kind,
-      "123",
-    );
-    await assertSucceeds(getDoc(ref));
-    await assertFails(updateDoc(ref, { vote_average: 9 }));
-    await assertSucceeds(setDoc(ref, data));
     await assertSucceeds(deleteDoc(ref));
   });
 }
@@ -115,30 +90,60 @@ test("unrecognized paths are denied even for authenticated users", async () => {
     await assertFails(getDoc(doc(db, path)));
   }
 });
-
-test("library: private watch status and ratings enforce owner, shape, ranges, and identity", async () => {
-  const data = {
-    id: 123,
-    kind: "movie",
-    title: "Up",
-    poster_path: "/test.jpg",
-    year: "2009",
-    status: "watchlist",
-    rating: 0,
-  };
+test("library: owner-only access with server timestamps", async () => {
   const db = env.authenticatedContext("alice").firestore();
   const ref = doc(db, "users/alice/library/movie-123");
-  await assertSucceeds(setDoc(ref, data));
-  await assertSucceeds(updateDoc(ref, { status: "watched", rating: 9 }));
+  await assertSucceeds(setDoc(ref, fresh()));
+  const stored = (await getDoc(ref)).data();
+  await assertSucceeds(
+    setDoc(ref, {
+      ...fields,
+      status: "watched",
+      rating: 9,
+      favorite: true,
+      addedAt: stored.addedAt,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  // addedAt is immutable and updatedAt must be the server time.
+  await assertFails(
+    updateDoc(ref, {
+      addedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(updateDoc(ref, { rating: 3 }));
+  await assertSucceeds(
+    updateDoc(ref, { rating: 3, updatedAt: serverTimestamp() }),
+  );
   for (const ctx of [
     env.unauthenticatedContext(),
     env.authenticatedContext("bob"),
   ]) {
     const other = doc(ctx.firestore(), "users/alice/library/movie-123");
     await assertFails(getDoc(other));
-    await assertFails(setDoc(other, data));
+    await assertFails(setDoc(other, fresh()));
     await assertFails(deleteDoc(other));
   }
+  await assertSucceeds(deleteDoc(ref));
+});
+test("library: favorites can exist without a list status, but empty entries cannot", async () => {
+  const ref = doc(
+    env.authenticatedContext("alice").firestore(),
+    "users/alice/library/tv-7",
+  );
+  const tv = { id: 7, kind: "tv" };
+  await assertSucceeds(
+    setDoc(ref, fresh({ ...tv, status: "", favorite: true })),
+  );
+  await deleteDoc(ref);
+  await assertFails(setDoc(ref, fresh({ ...tv, status: "", favorite: false })));
+});
+test("library: reject malformed, oversized, extra fields, bad timestamps and mismatched IDs", async () => {
+  const ref = doc(
+    env.authenticatedContext("alice").firestore(),
+    "users/alice/library/movie-123",
+  );
   for (const patch of [
     { rating: 11 },
     { rating: -1 },
@@ -150,7 +155,22 @@ test("library: private watch status and ratings enforce owner, shape, ranges, an
     { admin: true },
     { year: "invalid" },
     { poster_path: "https://evil.test" },
+    { favorite: "yes" },
+    { addedAt: Timestamp.fromDate(new Date("2000-01-01")) },
+    { updatedAt: Timestamp.fromDate(new Date("2099-01-01")) },
   ])
-    await assertFails(setDoc(ref, { ...data, ...patch }));
-  await assertSucceeds(deleteDoc(ref));
+    await assertFails(setDoc(ref, fresh(patch)));
+  await assertFails(setDoc(ref, fields));
+});
+test("library: entries from before timestamps can be upgraded on their next write", async () => {
+  const oldShape = { ...fields };
+  delete oldShape.favorite;
+  await seed("users/alice/library/movie-123", oldShape);
+  const ref = doc(
+    env.authenticatedContext("alice").firestore(),
+    "users/alice/library/movie-123",
+  );
+  await assertSucceeds(getDoc(ref));
+  await assertFails(updateDoc(ref, { rating: 4 }));
+  await assertSucceeds(setDoc(ref, fresh({ rating: 4 })));
 });

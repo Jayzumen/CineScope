@@ -6,6 +6,7 @@ const keys = createRemoteJWKSet(
   ),
   { timeoutDuration: 3000 },
 );
+const CLOCK_TOLERANCE_SECONDS = 30;
 export async function verifiedUser(authorization: string | null) {
   if (!authorization) return null;
   const project = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -20,8 +21,10 @@ export async function verifiedUser(authorization: string | null) {
     issuer: `https://securetoken.google.com/${project}`,
     audience: project,
     requiredClaims: ["exp", "iat", "auth_time", "sub"],
+    clockTolerance: CLOCK_TOLERANCE_SECONDS,
   });
-  const now = Date.now() / 1000;
+  // Allow small clock skew between this server and Google's token issuer.
+  const now = Date.now() / 1000 + CLOCK_TOLERANCE_SECONDS;
   if (
     !payload.sub ||
     payload.sub.length > 128 ||

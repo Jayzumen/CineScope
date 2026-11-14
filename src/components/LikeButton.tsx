@@ -1,35 +1,32 @@
 "use client";
 import { Heart } from "lucide-react";
 import { useRef, useState } from "react";
-import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
-import { useLibrary } from "./LibraryProvider";
-import {
-  favoriteDocument,
-  type FavoriteCollection,
-  type FavoriteSource,
-} from "@/lib/favorites";
+import { useLibrary, useLibraryEntry } from "./LibraryProvider";
+import type { LibrarySource } from "@/lib/library";
+import { updateLibrary } from "@/lib/libraryStore";
 export default function LikeButton({
   item,
-  collectionName,
+  kind,
   itemName,
+  lookup = false,
 }: {
-  item: FavoriteSource;
-  collectionName: FavoriteCollection;
+  item: LibrarySource;
+  kind: "movie" | "tv";
   itemName: string;
+  /** Watch this title's document directly if the library is too large. */
+  lookup?: boolean;
 }) {
   const { user, services, loading } = useAuth();
   const library = useLibrary();
+  const { entry, ready } = useLibraryEntry(kind, item.id, { lookup });
   const [pending, setPending] = useState(false);
   const busy = useRef(false);
   const router = useRouter();
   const path = usePathname();
-  const kind = collectionName === "likedMovies" ? "movie" : "tv";
-  const liked = library.favorites.some(
-    (x) => x.id === item.id && x.media_type === kind,
-  );
+  const liked = entry?.favorite === true;
   async function toggle() {
     if (busy.current) return;
     if (!user || !services) {
@@ -39,15 +36,9 @@ export default function LikeButton({
     busy.current = true;
     setPending(true);
     try {
-      const ref = doc(
-        services.db,
-        "users",
-        user.uid,
-        collectionName,
-        String(item.id),
-      );
-      if (liked) await deleteDoc(ref);
-      else await setDoc(ref, favoriteDocument(item, collectionName));
+      await updateLibrary(services.db, user.uid, item, kind, {
+        favorite: !liked,
+      });
       toast.success(liked ? "Removed from favorites" : "Added to favorites");
     } catch {
       toast.error("Could not update favorites. Please try again.");
@@ -61,9 +52,7 @@ export default function LikeButton({
       className={`icon-button ${liked ? "bookmark-active" : ""}`}
       type="button"
       onClick={toggle}
-      disabled={
-        loading || pending || (!!user && (library.loading || !!library.error))
-      }
+      disabled={loading || pending || (!!user && (!ready || !!library.error))}
       aria-pressed={liked}
       aria-label={`${liked ? "Remove" : "Save"} ${itemName} ${liked ? "from" : "to"} favorites`}
       title={library.error || `${liked ? "Remove from" : "Save to"} favorites`}

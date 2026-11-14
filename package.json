@@ -8,6 +8,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint src tests --max-warnings=0",
+    "format:check": "prettier --check src tests scripts docs README.md .github",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-cinescope \"node --experimental-strip-types --test tests/firestore/*.test.mjs\"",
     "typecheck": "tsc --noEmit",

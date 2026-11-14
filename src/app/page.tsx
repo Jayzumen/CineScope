@@ -1,26 +1,34 @@
 import Link from "next/link";
 import { ArrowRight, Star, ArrowUpRight } from "lucide-react";
 import { tmdbFetch } from "@/lib/tmdb";
-import { detail, limitBrowse } from "@/lib/catalog";
+import { detail } from "@/lib/catalog";
 import { collections, titleOf, type MediaResults } from "@/lib/catalogTypes";
 import { artworkUrl } from "@/lib/media";
 import Artwork from "@/components/Artwork";
 import TitleGrid from "@/components/TitleGrid";
 import TrailerButton from "@/components/TrailerButton";
 import LibraryActions from "@/components/LibraryActions";
+import type { DetailData } from "@/components/DetailPage";
 export default async function Home() {
-  await limitBrowse();
-  const [movies, shows, releases, people] = await Promise.all([
-    tmdbFetch<MediaResults>("/trending/movie/week?language=en-US"),
+  const trending = tmdbFetch<MediaResults>(
+    "/trending/movie/week?language=en-US",
+  );
+  // Start the featured title as soon as trending resolves, in parallel with
+  // the other rows, instead of after all of them.
+  const featuredDetail = trending.then((result) => {
+    const featured =
+      result.results.find((x) => x.backdrop_path) ?? result.results[0];
+    return featured
+      ? detail<DetailData>("movie", String(featured.id), "videos")
+      : null;
+  });
+  const [movies, shows, releases, people, feature] = await Promise.all([
+    trending,
     tmdbFetch<MediaResults>("/trending/tv/week?language=en-US"),
     tmdbFetch<MediaResults>("/movie/now_playing?language=en-US&page=1"),
     tmdbFetch<MediaResults>("/trending/person/week?language=en-US"),
+    featuredDetail,
   ]);
-  const featured =
-    movies.results.find((x) => x.backdrop_path) ?? movies.results[0];
-  const feature = featured
-    ? await detail<Movie>("movie", String(featured.id), "videos")
-    : null;
   return (
     <>
       {feature && (
@@ -41,28 +49,35 @@ export default async function Home() {
           <div className="shell">
             <div className="hero-copy">
               <p className="eyebrow">The spotlight · This week</p>
-              <h1>{feature.title}</h1>
+              <h1>{titleOf(feature)}</h1>
               <div className="metadata">
-                <span className="rating">
-                  <Star size={14} />
-                  {feature.vote_average.toFixed(1)}
-                </span>
-                <span>{feature.release_date?.slice(0, 4)}</span>
-                <span>{feature.runtime} min</span>
+                {!!feature.vote_average && (
+                  <span className="rating">
+                    <Star size={14} />
+                    {feature.vote_average.toFixed(1)}
+                  </span>
+                )}
+                {feature.release_date && (
+                  <span>{feature.release_date.slice(0, 4)}</span>
+                )}
+                {!!feature.runtime && <span>{feature.runtime} min</span>}
                 <span>
-                  {feature.genres
+                  {(feature.genres ?? [])
                     .slice(0, 2)
                     .map((g) => g.name)
                     .join(" / ")}
                 </span>
               </div>
               <p className="hero-description">
-                {feature.overview.length > 220
+                {feature.overview && feature.overview.length > 220
                   ? feature.overview.slice(0, 217) + "…"
                   : feature.overview}
               </p>
               <div className="hero-actions">
-                <TrailerButton videos={feature.videos} title={feature.title} />
+                <TrailerButton
+                  videos={feature.videos}
+                  title={titleOf(feature)}
+                />
                 <Link className="button subtle" href={`/movies/${feature.id}`}>
                   Explore film <ArrowUpRight size={16} />
                 </Link>

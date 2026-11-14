@@ -70,7 +70,7 @@ test("unified search supports short titles, empty results, errors and back navig
     const body = route.request().postDataJSON();
     await route.fulfill({
       json:
-        body.query === "missing"
+        body.query === "missing" || body.type === "person"
           ? { results: [], total_pages: 0, total_results: 0, page: 1 }
           : {
               results: [
@@ -97,10 +97,24 @@ test("unified search supports short titles, empty results, errors and back navig
   ).toBeVisible();
   await expect(page).toHaveURL(/q=Up/);
   await expect(page.getByAltText("Up: artwork unavailable")).toBeVisible();
+  const people = page.waitForRequest(
+    (r) =>
+      r.url().endsWith("/api/search") && r.postDataJSON()?.type === "person",
+  );
+  await page.getByRole("button", { name: "People", exact: true }).click();
+  await people;
+  await expect(page).toHaveURL(/type=person/);
+  await expect(
+    page.getByRole("heading", { name: "No people match “Up”" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "All", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Up", exact: true }),
+  ).toBeVisible();
   await page.getByRole("searchbox").fill("missing");
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "No matches this time" }),
+    page.getByRole("heading", { name: "No results match “missing”" }),
   ).toBeVisible();
   await page.goBack();
   await expect(

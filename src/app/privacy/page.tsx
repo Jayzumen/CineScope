@@ -10,9 +10,18 @@ export default function Page() {
       <h2>Account and library</h2>
       <p>
         Signing in uses Firebase Authentication. Favorites, watchlist, watched
-        status and ratings are stored in Firestore under your account. Library
-        records are private under our application rules. You can remove saved
-        titles from My Library.
+        status, ratings and the date you saved each title are stored in
+        Firestore under your account. Library records are private under our
+        application rules. You can remove saved titles from My Library, and you
+        can permanently delete your account and all library data yourself at the
+        bottom of My Library.
+      </p>
+      <h2>Region</h2>
+      <p>
+        Where-to-watch information defaults to the country your connection
+        appears to come from, as reported by our host, or your browser’s
+        language settings. If you choose a region, a cookie remembers that
+        choice for a year. It stores only the two-letter region code.
       </p>
       <h2>Sharing</h2>
       <p>
@@ -40,7 +49,7 @@ export default function Page() {
       </p>
       <h2>Account requests</h2>
       <p>
-        For data access or account deletion assistance, contact{" "}
+        For a copy of your data or help with your account, contact{" "}
         <a href="mailto:jnreinhardt96@gmail.com">jnreinhardt96@gmail.com</a>.
         This page describes the application’s data flow; deployment-specific
         retention and processor settings must be reviewed before public launch.

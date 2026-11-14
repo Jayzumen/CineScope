@@ -1,7 +1,12 @@
 import { createHash } from "node:crypto";
-export async function readSearchBody(
-  request: Request,
-): Promise<{ query: string; page: number; token?: string }> {
+export const searchTypes = ["multi", "movie", "tv", "person"] as const;
+export type SearchType = (typeof searchTypes)[number];
+export async function readSearchBody(request: Request): Promise<{
+  query: string;
+  page: number;
+  type: SearchType;
+  token?: string;
+}> {
   if (!request.headers.get("content-type")?.startsWith("application/json"))
     throw new Error("Invalid request.");
   const reader = request.body?.getReader();
@@ -27,7 +32,9 @@ export async function readSearchBody(
     !raw ||
     typeof raw !== "object" ||
     Array.isArray(raw) ||
-    Object.keys(raw).some((k) => !["query", "page", "token"].includes(k))
+    Object.keys(raw).some(
+      (k) => !["query", "page", "type", "token"].includes(k),
+    )
   )
     throw new Error("Invalid request.");
   if (
@@ -39,12 +46,14 @@ export async function readSearchBody(
   const page = raw.page ?? 1;
   if (!Number.isInteger(page) || page < 1 || page > 500)
     throw new Error("Invalid page.");
+  const type = raw.type ?? "multi";
+  if (!searchTypes.includes(type)) throw new Error("Invalid search type.");
   if (
     raw.token !== undefined &&
     (typeof raw.token !== "string" || raw.token.length > 2048)
   )
     throw new Error("Invalid verification token.");
-  return { query: raw.query.trim(), page, token: raw.token };
+  return { query: raw.query.trim(), page, type, token: raw.token };
 }
 export async function verifyChallenge(
   token: string,

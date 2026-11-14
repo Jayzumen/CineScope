@@ -31,25 +31,7 @@ export const titleOf = (item: MediaItem) =>
   "Untitled";
 export const hrefOf = (item: MediaItem, kind: MediaKind = "movie") =>
   `/${(item.media_type ?? kind) === "person" ? "cast" : (item.media_type ?? kind) === "tv" ? "shows" : "movies"}/${item.id}`;
-export const genres = [
-  { id: 28, label: "Action" },
-  { id: 35, label: "Comedy" },
-  { id: 18, label: "Drama" },
-  { id: 27, label: "Horror" },
-  { id: 878, label: "Science fiction" },
-  { id: 53, label: "Thriller" },
-  { id: 16, label: "Animation" },
-  { id: 99, label: "Documentary" },
-];
-export const tvGenres = [
-  { id: 10759, label: "Action & adventure" },
-  { id: 35, label: "Comedy" },
-  { id: 18, label: "Drama" },
-  { id: 9648, label: "Mystery" },
-  { id: 10765, label: "Sci-fi & fantasy" },
-  { id: 16, label: "Animation" },
-  { id: 99, label: "Documentary" },
-];
+export { genres, tvGenres } from "./catalogValidation";
 export const collections = [
   {
     slug: "after-dark",

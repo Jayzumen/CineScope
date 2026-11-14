@@ -2,13 +2,13 @@
 import { useHydrated } from "@/hooks/use-hydrated";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Play } from "lucide-react";
-import { selectTrailer } from "@/lib/media";
+import { selectTrailer, type TrailerVideo } from "@/lib/media";
 import TrailerModal from "./TrailerModal";
 export default function TrailerButton({
   videos,
   title,
 }: {
-  videos?: { results: Video[] };
+  videos?: { results: TrailerVideo[] };
   title: string;
 }) {
   const hydrated = useHydrated();
