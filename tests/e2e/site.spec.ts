@@ -54,6 +54,10 @@ test("URL catalog controls and invalid filters", async ({ page }) => {
     page.getByRole("combobox", { name: "Minimum score", exact: true }),
   ).toHaveValue("7");
   await expect(page.locator(".poster-card").first()).toBeVisible();
+  await expect(page.locator(".poster-card img").first()).toHaveAttribute(
+    "loading",
+    "eager",
+  );
   await page.goto("/movies?page=9999");
   await expect(
     page.getByRole("heading", { name: "Those filters aren’t valid" }),

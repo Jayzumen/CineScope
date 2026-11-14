@@ -19,8 +19,6 @@ export default function Turnstile({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const widget = useRef<string | undefined>(undefined);
-  const callback = useRef(onToken);
-  callback.current = onToken;
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const render = useCallback(() => {
@@ -29,14 +27,14 @@ export default function Turnstile({
       sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
       action: "search",
       theme: "dark",
-      callback: (token: string) => callback.current(token),
+      callback: (token: string) => onToken(token),
       "expired-callback": () => setError("Verification expired. Try again."),
       "error-callback": () =>
         setError(
           "Verification could not load. Check your connection or try again later.",
         ),
     });
-  }, []);
+  }, [onToken]);
   useEffect(() => {
     render();
     return () => {

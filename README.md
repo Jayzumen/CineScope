@@ -33,6 +33,6 @@ Browser integration tests include automated accessibility scans. They need a val
 
 Deploy to Netlify using the checked-in netlify.toml and its automatic Next.js adapter. Follow [the Netlify checklist](docs/deployment.md), [security model](docs/security.md), and [style guide](docs/style-guide.md). Service provisioning, published Firestore rules and App Check enforcement are separate deployment steps; source code alone does not activate them.
 
-The gitignored IMPROVEMENTS.local.md tracks implementation and remaining launch checks. Dependency versions are locked; use pnpm and review major migrations separately. Current moderate development-tool advisories are documented in the security guide.
+The gitignored IMPROVEMENTS.local.md tracks implementation and remaining launch checks. The project uses Next.js 16, Firebase 13, ESLint 10 and the latest TypeScript version supported by the current TypeScript-ESLint parser. Production builds use Next.js's supported webpack mode; development keeps the default Turbopack compiler. Current moderate development-tool advisories are documented in the security guide.
 
 Movie data and images are provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. Viewing availability is supplied through TMDB/JustWatch and varies by region and time. Trailers use YouTube privacy-enhanced embeds.

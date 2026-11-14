@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
   const dev = process.env.NODE_ENV !== "production";
   const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;

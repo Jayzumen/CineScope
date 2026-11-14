@@ -13,10 +13,12 @@ export default function TitleCard({
   item,
   kind = "movie",
   save = true,
+  eager = false,
 }: {
   item: MediaItem;
   kind?: MediaKind;
   save?: boolean;
+  eager?: boolean;
 }) {
   const type = item.media_type ?? kind;
   const title = titleOf(item);
@@ -30,6 +32,7 @@ export default function TitleCard({
             )}
             alt={title}
             fill
+            loading={eager ? "eager" : "lazy"}
             sizes="(max-width:760px) 45vw, (max-width:1100px) 23vw, 200px"
           />
         </div>

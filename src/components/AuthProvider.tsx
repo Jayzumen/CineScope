@@ -22,23 +22,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: "",
   });
   useEffect(() => {
+    let active = true;
+    const publish = (next: AuthState) => {
+      queueMicrotask(() => {
+        if (active) setState(next);
+      });
+    };
     try {
       const services = getFirebase();
       if (!services) {
-        setState({
+        publish({
           user: null,
           loading: false,
           services: null,
           error:
             "Account features are not available yet. You can still explore the catalog.",
         });
-        return;
+        return () => {
+          active = false;
+        };
       }
-      return onAuthStateChanged(
+      const unsubscribe = onAuthStateChanged(
         services.auth,
-        (user) => setState({ user, loading: false, services, error: "" }),
+        (user) => publish({ user, loading: false, services, error: "" }),
         () =>
-          setState({
+          publish({
             user: null,
             loading: false,
             services,
@@ -46,13 +54,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               "Sign-in is temporarily unavailable. Please reload to retry.",
           }),
       );
+      return () => {
+        active = false;
+        unsubscribe();
+      };
     } catch {
-      setState({
+      publish({
         user: null,
         loading: false,
         services: null,
         error: "Sign-in is temporarily unavailable. Please reload to retry.",
       });
+      return () => {
+        active = false;
+      };
     }
   }, []);
   return <Context.Provider value={state}>{children}</Context.Provider>;

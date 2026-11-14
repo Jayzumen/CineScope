@@ -31,10 +31,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const { user, services, loading } = useAuth();
   const [state, setState] = useState<State>(initial);
   useEffect(() => {
-    if (!user || !services) {
-      setState({ ...initial, loading: false });
-      return;
-    }
+    if (!user || !services) return;
     let active = true;
     let failed = false;
     const loaded = new Set<string>();
@@ -42,7 +39,6 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     const movies: MediaItem[] = [];
     const shows: MediaItem[] = [];
     let entries: LibraryEntry[] = [];
-    setState({ ...initial, owner: uid });
     const publish = () => {
       if (active && !failed)
         setState({

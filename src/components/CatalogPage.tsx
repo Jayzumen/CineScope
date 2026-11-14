@@ -134,7 +134,7 @@ export default async function CatalogPage({
         </span>
       </div>
       {result.results.length ? (
-        <TitleGrid items={result.results} kind={kind} />
+        <TitleGrid items={result.results} kind={kind} eagerFirst />
       ) : (
         <div className="empty-state">
           <h2>No stories found this time</h2>

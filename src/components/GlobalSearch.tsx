@@ -1,6 +1,6 @@
 "use client";
 import { useHydrated } from "@/hooks/use-hydrated";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { useAuth } from "./AuthProvider";
@@ -8,12 +8,25 @@ import TitleGrid from "./TitleGrid";
 import Turnstile from "./Turnstile";
 import type { MediaResults } from "@/lib/catalogTypes";
 export default function GlobalSearch({ nonce }: { nonce?: string }) {
-  const hydrated = useHydrated();
   const params = useSearchParams();
   const q = params.get("q") ?? "";
   const rawPage = Number(params.get("page") ?? 1);
   const page =
     Number.isInteger(rawPage) && rawPage >= 1 && rawPage <= 500 ? rawPage : 1;
+  return (
+    <SearchExperience key={`${q}:${page}`} nonce={nonce} q={q} page={page} />
+  );
+}
+function SearchExperience({
+  nonce,
+  q,
+  page,
+}: {
+  nonce?: string;
+  q: string;
+  page: number;
+}) {
+  const hydrated = useHydrated();
   const router = useRouter();
   const { user } = useAuth();
   const [input, setInput] = useState(q);
@@ -24,57 +37,57 @@ export default function GlobalSearch({ nonce }: { nonce?: string }) {
   const [filter, setFilter] = useState("all");
   const requestId = useRef(0);
   const controller = useRef<AbortController | null>(null);
-  const loadRef = useRef<(token?: string) => Promise<void>>(async () => {});
-  loadRef.current = async (token?: string) => {
-    controller.current?.abort();
-    const ctrl = new AbortController();
-    controller.current = ctrl;
-    const id = ++requestId.current;
-    setBusy(true);
-    setError("");
-    setChallenge(false);
-    setResult(null);
-    try {
-      const jwt = await user?.getIdToken();
-      const response = await fetch("/api/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
-        },
-        body: JSON.stringify({ query: q, page, token }),
-        signal: ctrl.signal,
-      });
-      const data = await response.json();
-      if (id !== requestId.current) return;
-      if (!response.ok) {
-        setError(data.error || "Search failed. Please try again.");
-        setChallenge(data.challenge === true);
-      } else setResult(data);
-    } catch (e) {
-      if (
-        id === requestId.current &&
-        !(e instanceof Error && e.name === "AbortError")
-      )
-        setError("Could not connect. Check your connection and try again.");
-    } finally {
-      if (id === requestId.current) setBusy(false);
-    }
-  };
-  useEffect(() => {
-    setInput(q);
-    setFilter("all");
-    if (q.trim()) void loadRef.current();
-    else {
-      setResult(null);
+  const load = useCallback(
+    async (token?: string) => {
+      controller.current?.abort();
+      const ctrl = new AbortController();
+      controller.current = ctrl;
+      const id = ++requestId.current;
+      setBusy(true);
       setError("");
       setChallenge(false);
-    }
-    const activeController = controller.current;
+      setResult(null);
+      try {
+        const jwt = await user?.getIdToken();
+        const response = await fetch("/api/search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+          },
+          body: JSON.stringify({ query: q, page, token }),
+          signal: ctrl.signal,
+        });
+        const data = await response.json();
+        if (id !== requestId.current) return;
+        if (!response.ok) {
+          setError(data.error || "Search failed. Please try again.");
+          setChallenge(data.challenge === true);
+        } else setResult(data);
+      } catch (e) {
+        if (
+          id === requestId.current &&
+          !(e instanceof Error && e.name === "AbortError")
+        )
+          setError("Could not connect. Check your connection and try again.");
+      } finally {
+        if (id === requestId.current) setBusy(false);
+      }
+    },
+    [page, q, user],
+  );
+  useEffect(() => {
+    let active = true;
+    if (q.trim())
+      queueMicrotask(() => {
+        if (active) void load();
+      });
     return () => {
-      activeController?.abort();
+      active = false;
+      controller.current?.abort();
     };
-  }, [q, page]);
+  }, [load, q]);
+  const handleToken = useCallback((token: string) => void load(token), [load]);
   const navigate = (query: string, p = 1) =>
     router.push(
       `/search?${new URLSearchParams({ q: query, page: String(p) })}`,
@@ -87,7 +100,7 @@ export default function GlobalSearch({ nonce }: { nonce?: string }) {
         method="get"
         onSubmit={(e) => {
           e.preventDefault();
-          if (input.trim() === q && page === 1) void loadRef.current();
+          if (input.trim() === q && page === 1) void load();
           else navigate(input.trim());
         }}
       >
@@ -122,10 +135,7 @@ export default function GlobalSearch({ nonce }: { nonce?: string }) {
         </p>
       )}
       {challenge && (
-        <Turnstile
-          nonce={nonce}
-          onToken={(token) => void loadRef.current(token)}
-        />
+        <Turnstile nonce={nonce} onToken={handleToken} />
       )}
       {result && (
         <>
