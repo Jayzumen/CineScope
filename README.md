@@ -1,6 +1,6 @@
 # CineScope
 
-A cinematic movie, TV and people discovery website built with Next.js, React, TypeScript, Tailwind CSS, Radix UI and Firebase. Features include unified search, filtered catalogs, trailers, regional streaming availability, season information, themed collections, and a private library with favorites, watchlists, watched status and personal ratings. Selected titles can be shared through public URLs without exposing account data.
+A cinematic movie, TV and people discovery website built with Next.js, React, TypeScript, Tailwind CSS, Radix UI and Firebase. Features include unified search, filtered catalogs, trailers, regional streaming availability, season information, themed collections, an installable app manifest, branded link previews, and a private library with favorites, watchlists, watched status and personal ratings. Selected titles can be shared through public URLs without exposing account data.
 
 ## Local development
 

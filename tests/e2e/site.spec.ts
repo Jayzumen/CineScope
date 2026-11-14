@@ -125,6 +125,48 @@ test("account configuration absence is graceful and security headers are set", a
   ).toBeVisible();
 });
 
+test("share metadata, app manifest and branded assets are available", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    "http://localhost:3000",
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /opengraph-image/,
+  );
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+    "content",
+    "#101113",
+  );
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+    "href",
+    "/manifest.webmanifest",
+  );
+
+  const manifest = await request.get("/manifest.webmanifest");
+  expect(manifest.ok()).toBe(true);
+  expect(await manifest.json()).toMatchObject({
+    short_name: "CineScope",
+    start_url: "/",
+    display: "standalone",
+    theme_color: "#101113",
+  });
+  const icon = await request.get("/icon.svg");
+  expect(icon.ok()).toBe(true);
+  expect(icon.headers()["content-type"]).toContain("image/svg+xml");
+  const socialImage = await request.get("/opengraph-image");
+  expect(socialImage.ok()).toBe(true);
+  expect(socialImage.headers()["content-type"]).toContain("image/png");
+});
+
 test("catalog title searches cannot bypass unified search protection", async ({
   page,
 }) => {
